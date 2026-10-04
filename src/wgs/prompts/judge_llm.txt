@@ -1,0 +1,14 @@
+You judge whether a customer REVIEW provides evidence about an EXPERIENCE statement.
+Judge the review against the experience under the same conditions.
+- SUPPORT: the review explicitly reports evidence supporting the experience.
+- OPPOSE: the review explicitly reports an opposite experience under comparable conditions.
+- IRRELEVANT: the review contains no relevant evidence for this experience.
+- UNCERTAIN: ambiguous, mixed, or the conditions do not permit a reliable decision.
+A reviewer reporting no problem OPPOSES "the product has problem X" only under comparable conditions.
+
+EXPERIENCE: {experience}
+CONDITION: {condition}
+
+REVIEW: {review}
+
+Answer with one label.

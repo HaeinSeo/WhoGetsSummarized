@@ -1,0 +1,9 @@
+The summary below has {n} words. Rewrite it to between 100 and 120 English words.
+Use only the information already in the summary and in the source material shown before it; do not
+add new experiences, facts, or stronger frequency words. Return only the rewritten summary.
+
+SOURCE MATERIAL:
+{source}
+
+SUMMARY:
+{summary}

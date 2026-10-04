@@ -1,0 +1,39 @@
+# Raw data (Amazon Reviews 2023) and personal files: never commit
+data/
+
+# Heavy EDA outputs and pipeline runs (regenerable; can be hundreds of GB)
+outputs/
+runs/
+*.duckdb
+*.duckdb.wal
+duckdb_tmp/
+
+# Filled-in human annotations stay out of git by default.
+# Guides live in docs/annotation/. Publish adjudicated gold explicitly
+# (git add -f) only after checking the dataset license.
+annotations/
+
+# Model checkpoints / caches
+checkpoints/
+*.pt
+*.safetensors
+.hf_cache/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+build/
+dist/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.sqlite
+*.sqlite3
+*.db

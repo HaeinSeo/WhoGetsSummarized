@@ -1,0 +1,16 @@
+Decompose the product-review SUMMARY below into atomic claims. One claim = one experience or
+attribute statement with at most one condition. Rules:
+- "source_span" MUST be copied verbatim from the summary (an exact substring).
+- "proposition" restates the experience as a standalone statement about the PRODUCT, without reporter
+  wording or frequency words (e.g. "The cap can leak when shipped." not "A few customers said the cap leaked"),
+  keeping its condition. The frequency word goes in "quantifier".
+- Return at most 15 claims; merge nothing that has different conditions.
+- Do NOT add claims that are not in the summary. Do NOT drop quantifiers like "some", "most", "a few".
+- polarity: positive | negative | mixed | neutral
+- quantifier: the frequency word used in the summary (e.g., "some", "most", "many", "a few", "one"), or "none".
+- claim_type: reported_experience | product_attribute | recommendation | meta (e.g., "reviews are mixed")
+- condition: the usage condition/context if stated, else "".
+- aspect: a short snake_case attribute name (e.g., battery_life, fit, sound_quality).
+
+SUMMARY:
+{summary}

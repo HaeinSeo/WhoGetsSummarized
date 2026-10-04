@@ -1,0 +1,128 @@
+# Smoke test (~12 products): pilot.yaml settings with tiny cohorts and a separate run dir.
+# Regenerate from pilot.yaml if pilot settings change.
+project: WhoGetsSummarized
+design_version: '2.0'
+run_name: smoke
+seed: 20260929
+paths:
+  eda_dir: outputs/review_summary_eda_v1/full
+  source_review_parquet: outputs/review_summary_eda_v1/full/source_parquet/review
+  runs_dir: runs
+  annotations_dir: annotations/smoke
+categories:
+- Electronics
+- Beauty_and_Personal_Care
+- Health_and_Household
+- Toys_and_Games
+cohorts:
+- name: smoke_natural
+  kind: natural
+  split: smoke
+  n_per_category: 2
+  min_valid_reviews: 20
+- name: smoke_diagnostic
+  kind: diagnostic
+  split: smoke
+  n_per_category: 1
+  min_valid_reviews: 30
+  min_low: 5
+  min_high: 5
+- name: smoke_disclosure
+  kind: disclosure
+  split: smoke
+  n_per_category: 1
+  min_valid_reviews: 20
+  min_d_candidates: 3
+  min_u_reviews: 10
+preprocess:
+  min_ascii_ratio: 0.95
+  min_en_stopword_ratio: 0.08
+  stopword_min_words: 8
+bundle:
+  target_reviews: 30
+  max_reviews: 50
+  min_reviews: 20
+  common_input_token_limit: 4096
+  max_review_tokens: 400
+  tokenizer: Qwen/Qwen3-8B
+  cross_tokenizer_margin: 1.15
+  time_strata: 4
+ollama:
+  base_url: http://localhost:11434
+  timeout_s: 600
+generation:
+  models:
+  - qwen3:8b
+  - gemma4:12b
+  optional_models:
+  - llama3.1:8b
+  thinking: false
+  temperature: 0.0
+  seed: 42
+  num_ctx: 8192
+  num_predict: 256
+  target_words:
+  - 100
+  - 120
+  length_retry: 0
+extraction:
+  model: qwen3:8b
+  concurrency: 8        # parallel Ollama requests (throughput; recorded in manifest)
+  temperature: 0.0
+  num_ctx: 8192
+  num_predict: 2048
+retrieval:
+  model_id: BAAI/bge-small-en-v1.5
+  query_instruction: 'Represent this sentence for searching relevant passages: '
+  sensitivity_model_id: sentence-transformers/all-MiniLM-L6-v2
+  window_sentences: 2
+  k_values:
+  - 10
+  - 20
+  device: cuda
+  candidate_merge_threshold: 0.86
+evidence:
+  concurrency: 8        # parallel requests for Ollama judges (nimble/llama)
+  primary_judge: nimble
+  long_review_chars: 1500
+  windows_per_long_review: 3
+  judges:
+    nimble:
+      type: nimble
+      model: nimble:9b
+    nli:
+      type: nli
+      model_id: MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli
+      abstain_below: 0.5
+      device: cuda
+    llama:
+      type: llm
+      model: llama3.1:8b
+planner:
+  max_selected_experiences: 6
+  hidden_dim: 256
+  attention_heads: 4
+  attention_layers: 1
+  ffn_dim: 512
+  dropout: 0.1
+  learning_rate: 0.0001
+  weight_decay: 0.01
+  batch_products: 8
+  max_epochs: 10
+  patience: 3
+  train_seeds:
+  - 42
+  - 123
+  - 2026
+  lambda_inv: 0.5
+  lambda_remove: 0.5
+annotation:
+  disclosure_items: 1000
+  pair_items: 500
+  inventory_products: 40
+  annotators:
+  - A1
+  - A2
+evaluation:
+  bootstrap_repetitions: 2000
+  minority_support_share: 0.2

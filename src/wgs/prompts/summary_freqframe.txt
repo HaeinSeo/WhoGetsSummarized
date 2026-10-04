@@ -1,0 +1,16 @@
+Summarize the customer experiences in the supplied reviews in 100–120 English words.
+Use only these reviews. Preserve relevant conditions and disagreements.
+Describe both positive and negative experiences when supported.
+Do not turn a single report into a claim about all customers.
+Do not infer product facts or the trustworthiness of a reviewer from outside knowledge.
+An automatic (possibly imperfect) count of how many distinct reviewers mention each aspect
+is given below. Use it to describe how common each experience is; do not copy the table.
+Return only the summary.
+
+Automatic aspect counts (distinct reviewers, out of {n_reviewers}):
+{freq_table}
+
+Product category: {category}
+
+Reviews:
+{reviews}

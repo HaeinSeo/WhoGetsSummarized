@@ -1,0 +1,15 @@
+List the concrete customer experiences reported in the single product REVIEW below.
+One item = one experience about one aspect with at most one condition. Rules:
+- "source_span" MUST be copied verbatim from the review (an exact substring, as short as possible).
+- "proposition" restates the experience as a general standalone sentence about the product
+  (e.g., "The battery lasts about 10 hours of continuous use."), keeping its condition.
+- Return at most 10 items.
+- Skip pure exclamations with no content (e.g., "Love it!!") unless it is the only content; then
+  return one item with aspect "overall".
+- polarity: positive | negative | mixed | neutral
+- condition: usage condition/context/time if stated (e.g., "after two weeks", "with iPhone 14"), else "".
+- aspect: short snake_case attribute name (e.g., battery_life, fit, durability, customer_service).
+Return an empty list if the review reports no experience.
+
+REVIEW:
+{review}

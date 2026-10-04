@@ -1,0 +1,16 @@
+Summarize the customer experiences in the supplied reviews in 100–120 English words.
+Use only these reviews. Preserve relevant conditions and disagreements.
+Describe both positive and negative experiences when supported.
+Do not turn a single report into a claim about all customers.
+Do not infer product facts or the trustworthiness of a reviewer from outside knowledge.
+Before writing, identify the specific experiences that matter for a purchase decision
+(compatibility, performance under stated conditions, durability, safety, fit, usability),
+including ones reported by only a few reviewers. Prefer these over generic praise or
+complaints, keep their conditions (e.g., "after two months", "on Windows 11"), and state how
+common each one is (e.g., "a few reviewers", "most reviewers") only as supported by the reviews.
+Return only the summary.
+
+Product category: {category}
+
+Reviews:
+{reviews}

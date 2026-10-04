@@ -1,0 +1,14 @@
+Write an English summary of customer experiences that is between 100 and 120 words long, using ONLY
+the evidence plan below. Each plan item is a verified experience with its condition and how many
+distinct reviewers support it or report the opposite.
+- Express every item faithfully: keep its condition and describe frequency in words consistent with
+  the counts (never "customers" or "most" for one or two reports; mention opposite reports when present).
+- If the plan is short, reach 100 words by giving each item's condition, frequency, and the example
+  wording in more detail. Never add an experience, product fact, or judgment that is not in the plan.
+Return only the summary.
+
+Product category: {category}
+Number of reviewers in the input: {n_reviewers}
+
+Evidence plan:
+{plan}
