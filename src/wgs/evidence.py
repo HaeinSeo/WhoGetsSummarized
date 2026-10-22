@@ -90,6 +90,28 @@ def run_judge(cfg: Config, judge_name: str, kind: str = "claim", scope: str = "t
                     "abstained": any(x["abstained"] for x in res),
                     "latency_s": sum(x["latency_s"] for x in res)}
 
+        n_fail, first_err = 0, None
+        if getattr(judge, "batch_ok", False) and jobs:
+            # in-process judges (NLI): pack many pairs into one GPU batch
+            chunk = 256
+            for i in tqdm(range(0, len(jobs), chunk), desc=f"judge {judge_name} {kind} batched"):
+                part = jobs[i:i + chunk]
+                items, owner = [], []
+                for k, (_, _, _, text, cond, prem) in enumerate(part):
+                    for x in prem:
+                        items.append({"experience": text, "condition": cond, "review": x})
+                        owner.append(k)
+                res = judge.judge(items)
+                for k, (key, hyp_id, review_id, _, _, prem) in enumerate(part):
+                    rk = [r for r, o in zip(res, owner) if o == k]
+                    labels = [x["label"] for x in rk]
+                    cache.write({"key": key, "judge_version": judge.version, "hyp_id": hyp_id,
+                                 "review_id": review_id, "n_windows": len(prem), "window_labels": labels,
+                                 "relation": aggregate_labels(labels),
+                                 "probs": rk[0]["probs"] if len(rk) == 1 else None,
+                                 "abstained": any(x["abstained"] for x in rk),
+                                 "latency_s": sum(x["latency_s"] for x in rk)})
+            jobs = []
         with ThreadPoolExecutor(max_workers=workers) as ex:
             futs = {ex.submit(run, j): j for j in jobs}
             for f in tqdm(as_completed(futs), total=len(futs), desc=f"judge {judge_name} {kind} x{workers}"):
@@ -98,8 +120,12 @@ def run_judge(cfg: Config, judge_name: str, kind: str = "claim", scope: str = "t
                     cache.write(f.result())
                 except Exception as e:
                     log_failure(cfg, f"judge-{judge_name}", f"{job[1]}|{job[2]}", repr(e))
-                    if "schema" in str(e) or "not installed" in str(e):
+                    n_fail += 1
+                    first_err = first_err or repr(e)
+                    if "schema" in str(e) or "not installed" in str(e) or "no longer supported" in str(e):
                         raise
+        if jobs and n_fail == len(jobs):  # never write an all-unjudged edge file silently
+            raise RuntimeError(f"all {n_fail} {judge_name} judgments failed; first error: {first_err}")
     edges = build_edges(cfg, judge_name, kind, scope, pairs, judge.version)
     log_step(cfg, f"judge-{judge_name}-{kind}", {"scope": scope, "version": judge.version,
                                                  "concurrency": workers},

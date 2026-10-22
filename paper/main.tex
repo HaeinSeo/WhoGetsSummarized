@@ -1,0 +1,91 @@
+%% WWW 2027 short paper draft (4 pages incl. references). Build: latexmk -pdf main.tex
+%% Numbers and tables come from `python -m wgs paper` (paper/generated). Never type results by hand.
+\documentclass[sigconf,anonymous,review]{acmart}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\newcommand{\missing}[1]{\textcolor{red}{[#1]}}
+\newcommand{\todo}[1]{\textcolor{orange}{[TODO: #1]}}
+\input{generated/numbers}
+
+\title{Who Gets Summarized? Auditing and Repairing Evidence Coverage in Product Review Summaries}
+
+\begin{abstract}
+Generative summaries increasingly mediate how shoppers read product reviews, yet it is unclear which
+reviewers' concrete experiences survive compression. We audit \nTestProducts{} Amazon products with
+two open generators in both directions: whether summary claims are grounded in input reviews, and
+whether human-identified important experiences in the input reach the summary
+(\nGoldExperiences{} experiences over \nGoldProducts{} products, \invOverlap\% found by both annotators).
+Validating the measurement itself, we find that off-the-shelf evidence judges over-attribute support
+(SUPPORT precision \supPNimble--\supPNli{} against human labels, $\kappa_{\text{human}}=\kappaPair$) and that
+top-10 retrieval misses supporting reviews (recall \retRecallTen{}), so we judge all pairs and report
+human-calibrated rates. We then propose a training-free evidence agent that verifies, selects, writes,
+and self-checks. \todo{one sentence with the main result and CI, from tab\_main}.
+\end{abstract}
+
+\keywords{opinion summarization, evidence attribution, measurement validity, product reviews}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+Product reviews are a primary public source of purchase information on the Web, and platforms now
+place generated summaries above them. A summary of 100--120 words must drop most of what 30 reviewers
+wrote; the question is \emph{which} experiences are kept and whether the kept ones are grounded.
+Prior work studies polarity calibration and minority-opinion loss in opinion summarization~\cite{poca2024,refer2025}
+and fine-grained faithfulness/completeness evaluation~\cite{finesure2024}. We contribute:
+\begin{enumerate}
+\item \textbf{A two-directional audit protocol} for review summaries: output claims are checked against
+every input review, and a human inventory of input experiences measures what survives
+(\nGoldExperiences{} experiences; importance $\kappa_w=\invImpKappa$).
+\item \textbf{A measurement-validity finding with a correction}: automatic evidence judges and top-$K$
+retrieval systematically mis-measure support in this domain; we quantify the error against human pair
+labels and report human-calibrated estimates~\cite{rogan1978,angelopoulos2023ppi}.
+\item \textbf{Controlled real-review interventions and an evidence agent}: holding a target experience's
+evidence fixed (or removing it) using only real reviews of the same product, and a training-free
+plan--write--verify agent compared against prompt and frequency-plan baselines under the same length.
+\end{enumerate}
+
+\section{Data and Protocol}
+We sample \nTestProducts{} test and \nDevProducts{} development products from four categories of Amazon
+Reviews 2023~\cite{hou2024bridging} (natural, diagnostic, and disclosure cohorts; product-disjoint).
+Each bundle has \reviewsPerBundle{} reviews on average under a common 4{,}096-token budget, identical
+for all generators. Generators: Qwen3-8B and Gemma-4-12B (greedy, thinking off); methods B0 direct,
+B1 coverage prompt, B2 frequency-framed prompt, B3 verified frequency plan, and our agent.
+\todo{state exactly who produced each label set (inventory, pair, disclosure) and how adjudication was
+done; this must match annotations/*/\_agreement.json and the repository records}.
+
+\section{Is the Measurement Trustworthy?}
+\begin{table}[t]\centering\small
+\caption{Evidence judges vs.\ human pair labels (dev; sampling-weighted).}\label{tab:meas}
+\input{generated/tab_measurement}
+\end{table}
+Table~\ref{tab:meas}: \todo{interpret over-attribution of Nimble vs.\ NLI; retrieval recall@10
+\retRecallTen{} vs.\ @20 \retRecallTwenty{}; consequence: all-pair NLI judging + Rogan--Gladen correction}.
+The disclosure rule reaches D precision \ruleDPrec{} and recall \ruleDRec{} against human labels.
+
+\section{Evidence Agent}
+\todo{plan: verified support (distinct users) $\times$ specificity, bonuses for negative/mixed and
+conditional experiences, at most two per aspect, 110-word budget; write from the plan; extract atomic
+claims, verify each against all input reviews with NLI, one constrained rewrite of unsupported claims.}
+
+\section{Results}
+\begin{table*}[t]\centering\small
+\caption{Test results. Rec.$_{gold}$: recall of human important experiences; Rec.$_{agreed}$: only
+experiences found by both annotators; $\Delta$: paired product bootstrap vs.\ B0; Supp.$_{corr}$:
+human-calibrated pair support rate.}\label{tab:main}
+\input{generated/tab_main}
+\end{table*}
+\begin{table}[t]\centering\small
+\caption{Controlled real-review interventions.}\label{tab:iv}
+\input{generated/tab_interventions}
+\end{table}
+\todo{results text: only claims backed by tab\_main / tab\_iv; report effect sizes with CIs}.
+
+\section{Limitations and Ethics}
+Disclosure is what reviews state, not hidden incentives. Semantic support is not generation provenance.
+Judge error rates are estimated on dev and assumed to transfer to test. Review text is not
+redistributed; we release IDs, labels, prompts, and code. \todo{annotator consent / compensation}.
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{refs}
+\end{document}

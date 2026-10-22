@@ -9,7 +9,7 @@ import json
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import f1_score, precision_recall_fscore_support
+from sklearn.metrics import cohen_kappa_score, f1_score, precision_recall_fscore_support
 from tqdm import tqdm
 
 from . import data
@@ -61,6 +61,9 @@ def eval_judges(cfg: Config, judges: list[str], kind: str = "claim") -> pd.DataF
         m = gold.merge(e[e.judged], on=["hyp_id", "review_id"], how="left")
         missing = int(m["relation_y"].isna().sum())
         m = m.dropna(subset=["relation_y"]).rename(columns={"relation_x": "gold", "relation_y": "relation"})
+        if m.empty:
+            raise ValueError(f"judge '{j}' has no judged gold pairs (see runs/<run>/failures.jsonl); "
+                             f"re-run `wgs judge --judge {j} --scope gold`")
         m["group"] = np.where(m.review_id.map(rv["rule_label"]) == "D", "D", "nonD")
         m["len_bin"] = pd.cut(m.review_id.map(rv["word_count"]), [0, 30, 100, 10**6],
                               labels=["short", "medium", "long"]).astype(str)
@@ -68,6 +71,7 @@ def eval_judges(cfg: Config, judges: list[str], kind: str = "claim") -> pd.DataF
         w = m["sampling_weight"].astype(float)
         lat = m["latency_s"].astype(float)
         base = {"judge": j, "unjudged_gold_pairs": missing,
+                "gold_annotator_type": str(gold["annotator_type"].iloc[0]) if "annotator_type" in gold else "unknown",
                 "latency_p50_s": float(lat.median()), "latency_p95_s": float(lat.quantile(.95)),
                 "pairs_per_s": float(1 / lat.mean()) if lat.mean() else None}
         rows.append({**base, "slice": "all_unweighted", **_cls_report(m.gold, m.relation)})
@@ -334,3 +338,130 @@ def auto_recall(cfg: Config, judge_name: str, scope: str = "topk:10", per_bundle
         pd.DataFrame([{"judge": judge_name, "n_summaries": len(h), "spearman_auto_vs_human": rho}]).to_csv(
             cfg.out_dir / f"auto_recall_validation_{judge_name}.csv", index=False)
     return out
+
+
+def gold_recall(cfg: Config, judge_name: str, min_importance: int = 2, baseline: str = "direct",
+                reps: int | None = None) -> pd.DataFrame:
+    """Important-experience recall on the HUMAN inventory (40 products), presence decided by the
+    evidence judge (gold experience vs summary text; SUPPORT = expressed). Reported for all gold
+    experiences and for the human_agreed subset (found by both annotators; AI-adjudication-free).
+    The judge's presence decisions are validated against the human summary-gold sample."""
+    from concurrent.futures import ThreadPoolExecutor
+    from .judges import make_judge
+    from .metrics import paired_bootstrap
+    from .storage import JsonlAppender, short_hash
+    judge = make_judge(cfg, judge_name)
+    inv = _need(cfg.annotations_dir / "experience_inventory.parquet")
+    inv = inv[inv.importance >= min_importance]
+    sums = pd.DataFrame(read_jsonl(cfg.out_dir / "summaries.jsonl"))
+    sums = sums[(sums.variant == "original") & sums.bundle_id.isin(set(inv.bundle_id))]
+    m = sums[["summary_id", "bundle_id", "product_id", "method", "model_id", "text", "word_count"]].merge(
+        inv[["bundle_id", "experience_id", "proposition", "condition", "polarity", "minority", "conditional",
+             "human_agreed", "cross_check_status"]], on="bundle_id")
+    path = cfg.out_dir / f"gold_presence_{judge_name}.jsonl"
+    cache = JsonlAppender(path, "key")
+    m["key"] = [short_hash(judge.version, a, b) for a, b in zip(m.summary_id, m.experience_id)]
+    todo = m[~m.key.isin(cache.done)].drop_duplicates("key")
+
+    def run(r):
+        lab = judge.judge([{"experience": r.proposition, "condition": r.condition, "review": r.text}])[0]["label"]
+        return {"key": r.key, "summary_id": r.summary_id, "experience_id": r.experience_id, "label": lab}
+    workers = int(cfg["evidence"].get("concurrency", 1)) if getattr(judge, "parallel_ok", False) else 1
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        for res in tqdm(ex.map(run, todo.itertuples()), total=len(todo), desc=f"gold presence x{workers}"):
+            cache.write(res)
+    cache.close()
+    lab = {x["key"]: x["label"] for x in read_jsonl(path)}
+    m["hit"] = [float(lab.get(k) == "SUPPORT") for k in m.key]
+    write_parquet(m.drop(columns=["text"]), cfg.out_dir / f"gold_presence_{judge_name}.parquet")
+    g = ["summary_id", "product_id", "method", "model_id", "word_count"]
+    per = m.groupby(g).agg(recall_gold=("hit", "mean"), n_gold=("hit", "size")).reset_index()
+    subsets = [("human_agreed", True, "recall_gold_human_agreed"), ("minority", True, "recall_gold_minority"),
+               ("polarity", "negative", "recall_gold_negative"), ("conditional", True, "recall_gold_conditional")]
+    for col, val, name in subsets:
+        per = per.merge(m[m[col] == val].groupby("summary_id")["hit"].mean().rename(name), on="summary_id", how="left")
+    write_parquet(per, cfg.out_dir / f"gold_recall_{judge_name}.parquet")
+    reps = reps or int(cfg["evaluation"]["bootstrap_repetitions"])
+    metrics_ = ["recall_gold", "recall_gold_human_agreed", "recall_gold_minority", "recall_gold_negative", "word_count"]
+    out = pd.DataFrame([paired_bootstrap(per, met, baseline, meth, reps=reps, seed=cfg.seed % 2**32)
+                        for meth in sorted(set(per.method) - {baseline}) for met in metrics_])
+    out.to_csv(cfg.out_dir / f"gold_recall_paired_bootstrap_{judge_name}.csv", index=False)
+    per.groupby(["model_id", "method"])[[c for c in per.columns if c.startswith("recall") or c == "word_count"]] \
+        .mean().reset_index().to_csv(cfg.out_dir / f"gold_recall_table_{judge_name}.csv", index=False)
+    return out
+
+
+def presence_validation(cfg: Config, judge_name: str) -> dict:
+    """Judge presence decisions vs human summary gold on the same (summary, experience) items.
+    Human 'faithful' = present; condition_lost / overstated / absent / contradicted = not faithful."""
+    sg = _need(cfg.annotations_dir / "summary_gold.parquet")
+    auto = _need(cfg.out_dir / f"gold_presence_{judge_name}.parquet")
+    j = sg.merge(auto[["summary_id", "experience_id", "hit"]], on=["summary_id", "experience_id"])
+    if j.empty:
+        raise ValueError("no overlap between summary gold and automatic presence decisions")
+    human = (j.judgment == "faithful").astype(int)
+    machine = j.hit.astype(int)
+    tp = int(((human == 1) & (machine == 1)).sum())
+    rep = {"judge": judge_name, "n": len(j), "accuracy": float((human == machine).mean()),
+           "precision_faithful": tp / max(1, int(machine.sum())), "recall_faithful": tp / max(1, int(human.sum())),
+           "kappa": float(cohen_kappa_score(human, machine)) if human.nunique() > 1 else None,
+           "human_faithful_rate": float(human.mean()), "auto_present_rate": float(machine.mean()),
+           "by_judgment": j.groupby("judgment")["hit"].mean().round(3).to_dict()}
+    (cfg.out_dir / f"presence_validation_{judge_name}.json").write_text(json.dumps(rep, indent=2))
+    return rep
+
+
+def _sens_spec(gold: pd.DataFrame, judged: pd.Series, weights: pd.Series) -> tuple[float, float]:
+    y = (gold == "SUPPORT").to_numpy()
+    j = (judged == "SUPPORT").to_numpy()
+    w = weights.to_numpy(float)
+    sens = (w * (y & j)).sum() / max(1e-9, (w * y).sum())
+    spec = (w * (~y & ~j)).sum() / max(1e-9, (w * ~y).sum())
+    return float(sens), float(spec)
+
+
+def corrected_support_rates(cfg: Config, judge: str, scope: str = "all", reps: int = 2000) -> pd.DataFrame:
+    """Human-calibrated pair-level support rates (Rogan-Gladen correction).
+
+    observed p = share of judged (claim, review) pairs the judge labels SUPPORT, per generator x
+    method x review group (D / U / all). Judge sensitivity and specificity for SUPPORT are estimated
+    on the human pair gold (dev split, sampling-weighted); corrected = (p + spec - 1)/(sens + spec - 1),
+    clipped to [0, 1]. 95% CIs bootstrap the human gold. Assumes judge error rates transfer from
+    dev to test (same product population and generators); reported together with the raw rates."""
+    from .evidence import edges_path
+    gold = _need(cfg.annotations_dir / "pair_gold.parquet")
+    ge = pd.read_parquet(edges_path(cfg, judge, "claim", "gold"))
+    g = gold.merge(ge[ge.judged][["hyp_id", "review_id", "relation"]], on=["hyp_id", "review_id"],
+                   suffixes=("", "_judge"))
+    w = g["sampling_weight"].astype(float)
+    sens, spec = _sens_spec(g["relation"], g["relation_judge"], w)
+    rng = np.random.default_rng(cfg.seed % 2**32)
+    boots = []
+    for _ in range(reps):
+        i = rng.integers(0, len(g), len(g))
+        boots.append(_sens_spec(g["relation"].iloc[i], g["relation_judge"].iloc[i], w.iloc[i]))
+    e = pd.read_parquet(edges_path(cfg, judge, "claim", scope), columns=["hyp_id", "review_id", "judged", "relation"])
+    e = e[e.judged]
+    cl = pd.read_parquet(cfg.out_dir / "summary_claims.parquet", columns=["claim_id", "summary_id"])
+    sm = pd.DataFrame(read_jsonl(cfg.out_dir / "summaries.jsonl"))[["summary_id", "model_id", "method", "split", "variant", "cohort"]]
+    e = e.merge(cl, left_on="hyp_id", right_on="claim_id").merge(sm, on="summary_id")
+    e = e[(e.split == "test") & (e.variant == "original")]
+    e["group"] = e.review_id.map(data.reviews(cfg)["rule_label"])
+    rows = []
+    def corr(p, s, c):
+        d = s + c - 1
+        return float(np.clip((p + c - 1) / d, 0, 1)) if d > 0.05 else np.nan
+    for (model, meth), x in e.groupby(["model_id", "method"]):
+        for grp in ("all", "D", "U"):
+            y = x if grp == "all" else x[x.group == grp]
+            if y.empty:
+                continue
+            p = float((y.relation == "SUPPORT").mean())
+            cb = [corr(p, s, c) for s, c in boots]
+            rows.append({"model_id": model, "method": meth, "group": grp, "n_pairs": len(y),
+                         "observed_support_rate": p, "corrected_support_rate": corr(p, sens, spec),
+                         "ci_low": float(np.nanpercentile(cb, 2.5)), "ci_high": float(np.nanpercentile(cb, 97.5)),
+                         "judge_sensitivity": sens, "judge_specificity": spec, "judge": judge, "scope": scope})
+    df = pd.DataFrame(rows)
+    df.to_csv(cfg.out_dir / f"corrected_support_rates_{judge}.csv", index=False)
+    return df

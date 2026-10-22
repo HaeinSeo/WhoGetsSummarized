@@ -198,6 +198,13 @@ def build_candidates(cfg: Config, cohorts=None, splits=None) -> pd.DataFrame:
         df["_h"] = [short_hash(cfg.seed, x) for x in df.cand_id]
         df = (df.sort_values(["bundle_id", "_n", "_h"], ascending=[True, False, True])
                 .groupby("bundle_id").head(int(cap)).drop(columns=["_n", "_h"]).reset_index(drop=True))
+    if df.empty:
+        raise RuntimeError("no candidates built (are review experiences extracted for these bundles?)")
+    prev = cfg.out_dir / "input_candidates.parquet"
+    if prev.exists():  # building a subset (e.g. dev) must not drop other bundles' candidates
+        old = pd.read_parquet(prev)
+        df = pd.concat([old[~old.bundle_id.isin(set(df.bundle_id))], df], ignore_index=True)
+    write_parquet(df, prev)
     log_step(cfg, "build-candidates", {"threshold": thr, "max_candidates_per_bundle": cap},
              {"candidates": len(df)}, started)
     return df

@@ -103,6 +103,10 @@ retrieval:
   candidate_merge_threshold: 0.86
   max_candidates_per_bundle: 30
 evidence:
+  # chosen on DEV pair gold (2026-10-19): NLI p(SUPPORT)>=0.9 -> precision 0.81; OPPOSE never reaches
+  # precision 0.6 at any threshold, so automatic opposition is not counted (threshold > 1).
+  support_threshold: 0.9
+  oppose_threshold: 1.01
   concurrency: 8
   primary_judge: nimble
   long_review_chars: 1500

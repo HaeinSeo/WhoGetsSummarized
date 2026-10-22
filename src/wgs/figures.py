@@ -33,7 +33,7 @@ FONTS = {
     "comic": ["Comic Sans MS", "Comic Neue", "DejaVu Sans"],
 }
 METHOD_LABEL = {"direct": "B0 Direct", "coverage": "B1 Coverage", "freqframe": "B2 Freq. prompt",
-                "plan:frequency": "B3 Freq. plan", "plan:frequency_unverified": "B3 unverified"}
+                "plan:frequency": "B3 Freq. plan", "plan:frequency_unverified": "B3 unverified", "plan:agent": "Agent w/o check", "agent": "Plan agent (v1)"}
 
 
 def setup_style(font: str = "clean") -> str:
@@ -61,6 +61,8 @@ def _order(m: str) -> int:
 
 
 def _label(m: str) -> str:
+    if m.startswith("agent2"):
+        return "Agent v2 (ours)"
     return METHOD_LABEL.get(m, m)
 
 
@@ -76,27 +78,43 @@ def _save(fig, out: Path, name: str, data: pd.DataFrame, formats) -> list[str]:
     return paths
 
 
-def fig_paired_differences(paths: list[Path], out, formats, title: str, name: str):
-    """Forest plot: paired difference vs B0 (product bootstrap 95% CI) per metric facet."""
+METRIC_TITLE = {
+    "recall_gold": "All gold experiences", "recall_gold_human_agreed": "Found by both annotators",
+    "recall_gold_minority": "Minority experiences", "recall_gold_negative": "Negative experiences",
+    "recall_gold_conditional": "Conditional experiences", "recall_imp": "Important experiences",
+    "conditional_fidelity": "Conditional fidelity", "recall_auto": "All verified experiences",
+    "recall_auto_minority": "Minority experiences", "recall_auto_negative": "Negative experiences",
+}
+TWO_COL_W = 7.0   # ACM sigconf text width (figure*)
+
+
+def fig_paired_differences(paths: list[Path], out, formats, title: str, name: str, max_panels: int = 4):
+    """Forest plot: paired difference vs B0 (product bootstrap 95% CI), one panel per recall metric.
+    Word count is excluded (different scale; it is reported in the table)."""
+    from matplotlib.ticker import MaxNLocator
     frames = [pd.read_csv(p).assign(source=p.stem) for p in paths if p.exists()]
     if not frames:
         return []
     d = pd.concat(frames).dropna(subset=["diff"])
-    metrics = list(dict.fromkeys(d.metric))
+    d = d[d.metric != "word_count"]
+    metrics = [m for m in dict.fromkeys(d.metric)][:max_panels]
+    d = d[d.metric.isin(metrics)]
     methods = sorted(dict.fromkeys(d.b), key=_order)
-    fig, axes = plt.subplots(1, len(metrics), figsize=(COL_W, 0.35 * len(methods) + 0.7),
-                             sharey=True, squeeze=False)
+    width = COL_W if len(metrics) <= 2 else TWO_COL_W
+    fig, axes = plt.subplots(1, len(metrics), figsize=(width, 0.32 * len(methods) + 0.9),
+                             sharey=True, sharex=True, squeeze=False)
+    y = np.arange(len(methods))[::-1]
     for ax, met in zip(axes[0], metrics):
         x = d[d.metric == met].set_index("b").reindex(methods)
-        y = np.arange(len(methods))[::-1]
         ax.axvline(0, color=INK2, lw=0.8)
         ax.errorbar(x["diff"], y, xerr=[x["diff"] - x.ci_low, x.ci_high - x["diff"]], fmt="o",
                     ms=4, color=SERIES[0], ecolor=SERIES[0], elinewidth=1.2, capsize=0)
-        ax.set_title(met.replace("_", " "), color=INK)
+        ax.set_title(METRIC_TITLE.get(met, met.replace("_", " ")), color=INK, fontsize=7.5, pad=4)
         ax.grid(axis="y", visible=False)
+        ax.xaxis.set_major_locator(MaxNLocator(nbins=3))
         ax.set_yticks(y, [_label(m) for m in methods])
-    axes[0][0].set_xlabel(f"difference vs {_label(d.a.iloc[0])} (95% CI)")
-    fig.subplots_adjust(wspace=0.15)  # the title belongs in the LaTeX caption
+    fig.supxlabel(f"recall difference vs {_label(d.a.iloc[0])} (95% CI)", fontsize=8, y=0.0)
+    fig.subplots_adjust(wspace=0.12, bottom=0.2)
     return _save(fig, out, name, d, formats)
 
 
@@ -195,12 +213,12 @@ def fig_judges(eval_csv: Path, curve_json: Path, out, formats, name="fig_judges"
         v = e.set_index("judge").loc[j, cols].astype(float)
         ax.bar(np.arange(len(cols)) + (i - (len(judges) - 1) / 2) * w, v, w, color=SERIES[i],
                hatch=HATCH[i], edgecolor=SURFACE, linewidth=0.8, label=j)
-    ax.axhline(0.9, color=INK2, lw=0.6, ls="--")
-    ax.text(len(cols) - 0.5, 0.91, "gate .90", ha="right", va="bottom", fontsize=6, color=INK2)
+    ax.axhline(0.9, color=INK2, lw=0.6, ls="--", label="target 0.90")
     ax.set_xticks(np.arange(len(cols)), ["SUP\nprec.", "SUP\nrec.", "OPP\nprec.", "OPP\nrec."])
     ax.set_ylim(0, 1)
     ax.grid(axis="x", visible=False)
-    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), ncol=len(judges))
+    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), ncol=len(judges) + 1, columnspacing=0.8,
+              handlelength=1.4)
     ax2 = axes[1]
     curves = json.loads(curve_json.read_text()) if curve_json.exists() else {}
     for i, j in enumerate(judges):
@@ -222,6 +240,8 @@ def make_all(cfg: Config, font: str = "clean", formats=("pdf", "png"), judge: st
     made = []
     made += fig_paired_differences([o / "preservation_paired_bootstrap.csv"], out, formats,
                                    "Human gold: paired difference vs B0", "fig_preservation_human")
+    made += fig_paired_differences([o / f"gold_recall_paired_bootstrap_{judge}.csv"], out, formats,
+                                   "Human inventory: paired difference vs B0", "fig_recall_gold")
     made += fig_paired_differences([o / f"auto_recall_paired_bootstrap_{judge}.csv"], out, formats,
                                    "Automatic recall: paired difference vs B0", "fig_recall_auto")
     iv = o / f"intervention_metrics_auto_{judge}.csv"

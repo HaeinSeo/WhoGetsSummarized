@@ -9,6 +9,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 import shutil
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -96,7 +97,7 @@ def _rank_bin(rank: int) -> str:
 
 
 def export_pairs(cfg: Config, n: int | None = None, exhaustive_products: int = 0,
-                 kind: str = "claim", splits=None) -> list[str]:
+                 kind: str = "claim", splits=None, exhaustive_model: str | None = None) -> list[str]:
     """Stratified pair sample (rank bins x D-candidate flag) + optional exhaustive products.
 
     sampling_weight = stratum population / stratum sample size, so natural-distribution
@@ -116,8 +117,13 @@ def export_pairs(cfg: Config, n: int | None = None, exhaustive_products: int = 0
     chosen = []
     if exhaustive_products:
         bids = sorted(pairs.bundle_id.unique(), key=lambda b: short_hash(cfg.seed, "exh", b))
-        ex = pairs[pairs.bundle_id.isin(bids[:exhaustive_products])].assign(stratum="exhaustive",
-                                                                           sampling_weight=1.0)
+        ex = pairs[pairs.bundle_id.isin(bids[:exhaustive_products])]
+        if exhaustive_model:  # all pairs of ONE generator's summaries keeps the exhaustive set labelable
+            cl = pd.read_parquet(cfg.out_dir / "summary_claims.parquet")[["claim_id", "summary_id"]]
+            sm = pd.DataFrame(read_jsonl(cfg.out_dir / "summaries.jsonl"))[["summary_id", "model_id"]]
+            keep = set(cl.merge(sm, on="summary_id").query("model_id == @exhaustive_model").claim_id)
+            ex = ex[ex.hyp_id.isin(keep)]
+        ex = ex.assign(stratum="exhaustive", sampling_weight=1.0)
         chosen.append(ex)
         pairs = pairs[~pairs.bundle_id.isin(bids[:exhaustive_products])]
     strata = pairs.groupby("stratum")
@@ -166,30 +172,60 @@ def export_inventory(cfg: Config, n_products: int | None = None, cohorts=None) -
     return paths
 
 
-def build_inventory_gold(cfg: Config) -> pd.DataFrame:
-    """Read adjudicated <bundle>_inventory_gold.csv files -> experience_inventory.parquet."""
+def _ids(cell: str) -> list[str]:
+    return [x.strip() for x in str(cell).replace(";", ",").split(",") if x.strip()]
+
+
+def build_inventory_gold(cfg: Config, source_dir: str | None = None, adjudicator: str = "human",
+                         human_signoff: bool = True) -> pd.DataFrame:
+    """Adjudicated <bundle>_inventory_gold.csv files -> experience_inventory.parquet.
+
+    source_dir: folder with the gold CSVs (default annotations/<run>/inventory). If it sits in a
+    cross-check folder with adjudication/<bundle>_cross_check.csv and cross_check_summary.csv, each
+    experience gets its provenance: decision_type (both_sources / a1_only / a2_only /
+    added_from_reviews) and the bundle's cross_check_status. `human_agreed` marks experiences found
+    by BOTH human annotators in a two-annotator bundle; it is the primary, AI-independent gold subset.
+    """
+    from pathlib import Path as _P
     d = _dir(cfg, "inventory")
-    key = pd.read_csv(d / "_key.csv")
+    src = _P(source_dir) if source_dir else d
+    if not src.is_absolute():
+        src = cfg.resolve(src)
+    key = pd.read_csv(d / "_key.csv", dtype=str, keep_default_na=False)
     minority = float(cfg["evaluation"]["minority_support_share"])
+    root = src.parent
+    decision = {}
+    for f in sorted((root / "adjudication").glob("*_cross_check.csv")):
+        a = pd.read_csv(f, dtype=str, keep_default_na=False)
+        decision.update({(r.bundle_id, r.final_experience_id): r.decision_type for r in a.itertuples()})
+    status = {}
+    if (root / "cross_check_summary.csv").exists():
+        cs = pd.read_csv(root / "cross_check_summary.csv", dtype=str, keep_default_na=False)
+        status = dict(zip(cs.bundle_id, cs.cross_check_status))
+    files = sorted(src.glob("*_inventory_gold.csv"))
+    if not files:
+        raise FileNotFoundError(f"no *_inventory_gold.csv in {src}")
     rows = []
-    for f in sorted(d.glob("*_inventory_gold.csv")):
+    for f in files:
         bid = f.name.split("_inventory_gold")[0]
         k = key[key.bundle_id == bid].set_index("anon_id")
+        if k.empty:
+            raise ValueError(f"{f.name}: bundle not in inventory _key.csv")
         n_users = k["user_id"].nunique()
-        inv = pd.read_csv(f, dtype=str, keep_default_na=False).fillna("")
+        inv = pd.read_csv(f, dtype=str, keep_default_na=False)
         inv = inv[inv.proposition.str.strip() != ""]
         aspect_users = {}
         for _, e in inv.iterrows():
-            ids = [x.strip() for x in e.support_anon_ids.replace(";", ",").split(",") if x.strip()]
-            aspect_users.setdefault(e.aspect, set()).update(k.loc[[i for i in ids if i in k.index], "user_id"])
+            aspect_users.setdefault(e.aspect, set()).update(k.loc[[i for i in _ids(e.support_anon_ids) if i in k.index], "user_id"])
+        st = status.get(bid, "unknown")
         for _, e in inv.iterrows():
-            sup = [x.strip() for x in e.support_anon_ids.replace(";", ",").split(",") if x.strip()]
-            opp = [x.strip() for x in e.oppose_anon_ids.replace(";", ",").split(",") if x.strip()]
+            sup, opp = _ids(e.support_anon_ids), _ids(e.oppose_anon_ids)
             bad = [x for x in sup + opp if x not in k.index]
             if bad:
                 raise ValueError(f"{f.name}: unknown anon ids {bad}")
             su = set(k.loc[sup, "user_id"])
             share = len(su) / n_users if n_users else np.nan
+            dtype_ = decision.get((bid, e.experience_id), "unknown")
             rows.append({
                 "experience_id": f"{bid}_{e.experience_id}", "bundle_id": bid,
                 "aspect": e.aspect, "proposition": e.proposition, "condition": e.condition,
@@ -200,7 +236,10 @@ def build_inventory_gold(cfg: Config) -> pd.DataFrame:
                 "support_users": len(su), "n_input_users": n_users, "support_share": share,
                 "aspect_share": len(su) / len(aspect_users[e.aspect]) if aspect_users.get(e.aspect) else np.nan,
                 "minority": share <= minority, "conditional": bool(e.condition.strip()),
-                "guideline_version": GUIDELINE_VERSION,
+                "decision_type": dtype_, "cross_check_status": st,
+                "human_agreed": dtype_ == "both_sources" and st == "A1_A2_reviewed",
+                "adjudicator_type": adjudicator, "human_signoff": bool(human_signoff),
+                "source_dir": str(src), "guideline_version": GUIDELINE_VERSION,
             })
     df = pd.DataFrame(rows)
     write_parquet(df, cfg.annotations_dir / "experience_inventory.parquet")
@@ -208,14 +247,18 @@ def build_inventory_gold(cfg: Config) -> pd.DataFrame:
 
 
 # ------------------------------------------------------------------ summary gold
-def export_summary(cfg: Config, min_importance: int = 1) -> list[str]:
+def export_summary(cfg: Config, min_importance: int = 2, n: int | None = None) -> list[str]:
+    """(summary, gold experience) presence sheet. With n, a random sample validates the automatic
+    presence judge (all pairs of 40 products x ~8 summaries are too many to label by hand)."""
     inv = pd.read_parquet(cfg.annotations_dir / "experience_inventory.parquet")
     inv = inv[inv.importance >= min_importance]
     sums = pd.DataFrame(read_jsonl(cfg.out_dir / "summaries.jsonl"))
-    sums = sums[sums.bundle_id.isin(inv.bundle_id)]
+    sums = sums[sums.bundle_id.isin(inv.bundle_id) & (sums.variant == "original")]
     m = sums.merge(inv, on="bundle_id")
     m["item_id"] = ["g" + short_hash(a, b, n=10) for a, b in zip(m.summary_id, m.experience_id)]
     m = m.sample(frac=1, random_state=cfg.seed % 2**32)
+    if n:
+        m = m.head(n)
     sheet = m[["item_id", "text", "proposition", "condition"]].rename(
         columns={"text": "summary", "proposition": "experience"}).copy()
     return _write_sheets(cfg, "summary", sheet, m[["item_id", "summary_id", "experience_id", "bundle_id"]].copy())
@@ -258,7 +301,7 @@ def export_interventions(cfg: Config, n: int | None = None) -> list[str]:
 
 
 # ------------------------------------------------------------------ merge -> agreement + gold
-def merge(cfg: Config, kind: str) -> dict:
+def merge(cfg: Config, kind: str, annotator_type: str = "human") -> dict:
     """Agreement on independent labels, disagreement sheet, and gold from agreed+adjudicated.
 
     gold parquet: item_id + key columns + <label>_A1, <label>_A2 (independent),
@@ -280,7 +323,8 @@ def merge(cfg: Config, kind: str) -> dict:
         sheets[a] = s.set_index("item_id")
     a1, a2 = anns[0], anns[1]
     both = sheets[a1].join(sheets[a2], lsuffix=f"_{a1}", rsuffix=f"_{a2}", how="inner")
-    report = {"kind": kind, "guideline_version": GUIDELINE_VERSION, "items": len(both)}
+    report = {"kind": kind, "guideline_version": GUIDELINE_VERSION, "items": len(both),
+              "annotator_type": annotator_type}
     complete = pd.Series(True, index=both.index)
     for c in cols:
         complete &= (both[f"{c}_{a1}"] != "") & (both[f"{c}_{a2}"] != "")
@@ -316,6 +360,7 @@ def merge(cfg: Config, kind: str) -> dict:
         report["unadjudicated"] = int(disagree.sum() - len(extra))
     gold = gold.reset_index().merge(key, on="item_id", how="left")
     gold["guideline_version"] = GUIDELINE_VERSION
+    gold["annotator_type"] = annotator_type   # provenance travels with the labels
     write_parquet(gold, cfg.annotations_dir / f"{kind}_gold.parquet")
     report["gold_items"] = len(gold)
     (d / "_agreement.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
@@ -345,3 +390,210 @@ def export_intervention_targets(cfg: Config, n: int | None = None) -> list[str]:
         columns={"text": "summary_original", "text_mod": "summary_modified"}).copy()
     key = m[["item_id", "pair_id", "summary_id", "summary_id_mod", "model_id", "method"]].copy()
     return _write_sheets(cfg, "intervention_target", sheet, key)
+
+
+# ------------------------------------------------------------------ hand-off to annotators
+ANNOTATOR_README = """[Annotation package for {who}]
+
+1. Open ONLY the files in this zip. Do not look at the other annotator's work or at model summaries.
+2. Fill only the empty label columns. Do not edit item_id / text columns or rename files.
+3. Labels must be spelled exactly as in the guides (e.g. SUPPORT, not support).
+4. Save in Excel as "CSV UTF-8 (comma delimited)".
+5. Guides: guides/*.md   (inventory: read <id>_reviews.csv, fill <id>_inventory_{who}.csv)
+6. When done, zip the same folder structure and send it back.
+
+[주석 패키지: {who}]
+1. 이 압축 파일 안의 파일만 여세요. 다른 주석자의 결과나 AI 요약은 보지 마세요.
+2. 비어 있는 라벨 열만 채우고, item_id·원문 열 수정이나 파일 이름 변경은 하지 마세요.
+3. 라벨은 가이드의 철자 그대로 쓰세요 (예: SUPPORT, support는 안 됨).
+4. 엑셀 저장 형식: "CSV UTF-8(쉼표로 분리)".
+5. 기준: guides 폴더 (inventory는 <번호>_reviews.csv를 읽고 <번호>_inventory_{who}.csv를 채움)
+6. 끝나면 같은 폴더 구조 그대로 압축해서 돌려보내 주세요.
+"""
+
+
+def pack(cfg: Config, who: str, kinds=None) -> str:
+    """Zip only what annotator `who` needs: own sheets, inventory review files, guides.
+    Never includes _key / _meta / other annotators' files."""
+    import zipfile
+    from .config import REPO_ROOT
+    if who not in cfg["annotation"]["annotators"]:
+        raise ValueError(f"unknown annotator {who}; config has {cfg['annotation']['annotators']}")
+    root = cfg.annotations_dir
+    out_dir = root / "_handoff"
+    out_dir.mkdir(exist_ok=True)
+    stamp = dt.datetime.now().strftime("%Y%m%d_%H%M")
+    tag = "_".join(kinds) if kinds else "all"
+    zpath = out_dir / f"{cfg['run_name']}_{who}_{tag}_{stamp}.zip"
+    n = 0
+    with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
+        dirs = [p for p in root.iterdir() if p.is_dir() and not p.name.startswith("_")]
+        if kinds:
+            dirs = [p for p in dirs if p.name in set(kinds)]
+        for kind_dir in sorted(dirs):
+            for f in sorted(kind_dir.iterdir()):
+                name = f.name
+                own = name == f"{who}.csv" or name.endswith(f"_inventory_{who}.csv") or name.endswith("_reviews.csv")
+                if f.is_file() and own and not name.startswith("_"):
+                    z.write(f, f"{kind_dir.name}/{name}")
+                    n += 1
+        for g in sorted((REPO_ROOT / "docs" / "annotation").glob("*.md")):
+            z.write(g, f"guides/{g.name}")
+        z.writestr("README.txt", ANNOTATOR_README.format(who=who))
+    if n == 0:
+        zpath.unlink()
+        raise FileNotFoundError("no sheets to pack yet (run `annotate export` first)")
+    return str(zpath)
+
+
+def unpack(cfg: Config, who: str, zip_path: str) -> list[str]:
+    """Put an annotator's returned sheets back. Only that annotator's own files are accepted;
+    item_ids and columns must match the exported template; previous files are backed up."""
+    import shutil as _sh
+    import zipfile
+    root = cfg.annotations_dir
+    backup = root / "_backup" / dt.datetime.now().strftime("%Y%m%d_%H%M%S")
+    done, problems = [], []
+    with zipfile.ZipFile(zip_path) as z:
+        for info in z.infolist():
+            parts = Path(info.filename).parts
+            if info.is_dir() or len(parts) < 2:
+                continue
+            kind, name = parts[-2], parts[-1]
+            if not (name == f"{who}.csv" or name.endswith(f"_inventory_{who}.csv")):
+                continue  # ignore guides, review files, anything else
+            target = root / kind / name
+            if not target.exists():
+                problems.append(f"{kind}/{name}: no such exported sheet")
+                continue
+            with z.open(info) as fh:
+                new = pd.read_csv(fh, dtype=str, keep_default_na=False)
+            old = pd.read_csv(target, dtype=str, keep_default_na=False)
+            if list(new.columns) != list(old.columns):
+                problems.append(f"{kind}/{name}: columns changed {list(new.columns)}")
+                continue
+            if "item_id" in old.columns and set(new.item_id) != set(old.item_id):
+                if set(old.item_id) <= set(new.item_id):  # sheet was shrunk after hand-off: keep current items
+                    new = new[new.item_id.isin(set(old.item_id))]
+                else:
+                    problems.append(f"{kind}/{name}: item_id set changed")
+                    continue
+            (backup / kind).mkdir(parents=True, exist_ok=True)
+            _sh.copy(target, backup / kind / name)
+            new.to_csv(target, index=False, encoding="utf-8-sig")
+            done.append(f"{kind}/{name}")
+    if problems:
+        raise ValueError("not imported:\n" + "\n".join(problems) + f"\n(imported {len(done)} files)")
+    return done
+
+
+def inventory_agreement(cfg: Config, a1_dir: str, a2_dir: str, cross_check_dir: str) -> dict:
+    """Agreement between the two independent inventories, read through the adjudication mapping.
+
+    Coverage: of the experiences kept in the final inventory (excluding ones added from reviews),
+    how many each annotator found and how many both found. Label agreement (importance, polarity,
+    risk) is computed on experiences found by both (a1/a2 ids may list several rows; the max
+    importance and the first polarity are used). Bundles missing one annotator are excluded."""
+    from pathlib import Path as _P
+    a1d, a2d, cc = (cfg.resolve(x) if not _P(x).is_absolute() else _P(x) for x in (a1_dir, a2_dir, cross_check_dir))
+    cs = pd.read_csv(cc / "cross_check_summary.csv", dtype=str, keep_default_na=False)
+    two = set(cs.loc[cs.cross_check_status == "A1_A2_reviewed", "bundle_id"])
+    rows, per_bundle = [], []
+    for f in sorted((cc / "adjudication").glob("*_cross_check.csv")):
+        a = pd.read_csv(f, dtype=str, keep_default_na=False)
+        bid = a.bundle_id.iloc[0]
+        if bid not in two:
+            continue
+        A1 = pd.read_csv(a1d / f"{bid}_inventory_A1.csv", dtype=str, keep_default_na=False).set_index("experience_id")
+        A2 = pd.read_csv(a2d / f"{bid}_inventory_A2.csv", dtype=str, keep_default_na=False).set_index("experience_id")
+        kept = a[a.decision_type.isin(["both_sources", "a1_only", "a2_only"])]
+        per_bundle.append({"bundle_id": bid, "kept": len(kept), "both": int((kept.decision_type == "both_sources").sum()),
+                           "a1_only": int((kept.decision_type == "a1_only").sum()),
+                           "a2_only": int((kept.decision_type == "a2_only").sum())})
+        for r in kept[kept.decision_type == "both_sources"].itertuples():
+            i1 = [x for x in _ids(r.a1_experience_ids) if x in A1.index]
+            i2 = [x for x in _ids(r.a2_experience_ids) if x in A2.index]
+            if not i1 or not i2:
+                continue
+            imp = lambda t, ids: max(int(t.at[x, "importance"] or 0) for x in ids)
+            rows.append({"bundle_id": bid, "imp_a1": imp(A1, i1), "imp_a2": imp(A2, i2),
+                         "pol_a1": A1.at[i1[0], "polarity"], "pol_a2": A2.at[i2[0], "polarity"],
+                         "risk_a1": max(A1.at[x, "risk_flag"] == "1" for x in i1),
+                         "risk_a2": max(A2.at[x, "risk_flag"] == "1" for x in i2)})
+    pb, lab = pd.DataFrame(per_bundle), pd.DataFrame(rows)
+    tot = pb[["kept", "both", "a1_only", "a2_only"]].sum()
+    rep = {
+        "bundles_two_annotators": len(pb), "bundles_excluded_single_annotator": sorted(set(cs.bundle_id) - two),
+        "experiences_kept": int(tot.kept),
+        "found_by_both": int(tot.both), "found_by_A1_only": int(tot.a1_only), "found_by_A2_only": int(tot.a2_only),
+        "overlap_share": float(tot.both / tot.kept),
+        "A1_coverage": float((tot.both + tot.a1_only) / tot.kept),
+        "A2_coverage": float((tot.both + tot.a2_only) / tot.kept),
+        "importance_exact_agreement": float((lab.imp_a1 == lab.imp_a2).mean()),
+        "importance_weighted_kappa": float(cohen_kappa_score(lab.imp_a1, lab.imp_a2, weights="linear")),
+        "polarity_agreement": float((lab.pol_a1 == lab.pol_a2).mean()),
+        "polarity_kappa": float(cohen_kappa_score(lab.pol_a1, lab.pol_a2)),
+        "risk_agreement": float((lab.risk_a1 == lab.risk_a2).mean()),
+        "n_label_pairs": len(lab),
+        "note": "final inventory adjudicated by AI (no human sign-off) unless stated otherwise",
+    }
+    out = cfg.annotations_dir / "inventory" / "_agreement.json"
+    out.write_text(json.dumps(rep, indent=2, ensure_ascii=False), encoding="utf-8")
+    pb.to_csv(cfg.annotations_dir / "inventory" / "_agreement_by_bundle.csv", index=False)
+    return rep
+
+
+def shrink_pairs(cfg: Config, keep_products: int = 2, model: str | None = None) -> dict:
+    """Shrink an exported pair sheet IN PLACE without changing item ids: keep every stratified row and
+    the exhaustive rows of the first `keep_products` exhaustive products (same order as export),
+    optionally only claims from one generator. Labels already entered are preserved; originals are
+    backed up. Returned sheets based on the old, larger version are still accepted by unpack."""
+    import shutil as _sh
+    d = _dir(cfg, "pair")
+    key = pd.read_csv(d / "_key.csv", dtype=str, keep_default_na=False)
+    ex = key[key.stratum == "exhaustive"]
+    order = sorted(ex.bundle_id.unique(), key=lambda b: short_hash(cfg.seed, "exh", b))
+    keep_b = set(order[:keep_products])
+    ok = ex.bundle_id.isin(keep_b)
+    if model:
+        cl = pd.read_parquet(cfg.out_dir / "summary_claims.parquet")[["claim_id", "summary_id"]]
+        sm = pd.DataFrame(read_jsonl(cfg.out_dir / "summaries.jsonl"))[["summary_id", "model_id"]]
+        model_claims = set(cl.merge(sm, on="summary_id").query("model_id == @model").claim_id)
+        ok &= ex.hyp_id.isin(model_claims)
+    keep_items = set(key[key.stratum != "exhaustive"].item_id) | set(ex[ok].item_id)
+    backup = cfg.annotations_dir / "_backup" / ("pair_before_shrink_" + dt.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    backup.mkdir(parents=True, exist_ok=True)
+    for f in d.glob("*.csv"):
+        _sh.copy(f, backup / f.name)
+        t = pd.read_csv(f, dtype=str, keep_default_na=False)
+        t[t.item_id.isin(keep_items)].to_csv(f, index=False, encoding="utf-8-sig")
+    meta = json.loads((d / "_meta.json").read_text(encoding="utf-8"))
+    meta.update(n_items=len(keep_items), shrunk={"keep_products": keep_products, "model": model,
+                                                 "from_items": len(key), "backup": str(backup)})
+    (d / "_meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
+    return {"before": len(key), "after": len(keep_items), "exhaustive_products": sorted(keep_b), "backup": str(backup)}
+
+
+def reset_labels(cfg: Config, kind: str) -> dict:
+    """Back up the current A1/A2 sheets of `kind` and blank every label column (and note),
+    e.g. when sheets were pre-filled by a model and must be labeled by humans. Item ids and texts
+    are unchanged, so the exported key stays valid."""
+    import shutil as _sh
+    d = _dir(cfg, kind)
+    backup = cfg.annotations_dir / "_backup" / f"{kind}_before_reset_{dt.datetime.now():%Y%m%d_%H%M%S}"
+    backup.mkdir(parents=True, exist_ok=True)
+    cols = LABEL_COLS[kind] + (["evidence_span"] if kind == "disclosure" else []) + ["note"]
+    done = {}
+    for a in cfg["annotation"]["annotators"]:
+        f = d / f"{a}.csv"
+        _sh.copy(f, backup / f.name)
+        t = pd.read_csv(f, dtype=str, keep_default_na=False)
+        filled = int((t[LABEL_COLS[kind][0]] != "").sum())
+        for c in cols:
+            if c in t:
+                t[c] = ""
+        t.to_csv(f, index=False, encoding="utf-8-sig")
+        done[a] = filled
+    for extra in d.glob("AI_ANNOTATION_NOTICE*.txt"):
+        _sh.move(str(extra), backup / extra.name)
+    return {"kind": kind, "cleared_labels": done, "backup": str(backup)}

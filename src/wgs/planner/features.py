@@ -24,11 +24,29 @@ def candidate_table(cfg: Config, judge: str, scope: str, kind: str = "candidate"
     bundles = {b["bundle_id"]: b for b in data.all_bundles(cfg)}
     cands = pd.read_parquet(cfg.out_dir / "input_candidates.parquet") if kind == "candidate" else None
     meta = cands.set_index("cand_id") if cands is not None else None
+    import ast
+    tau_s = float(cfg["evidence"].get("support_threshold", 0.9))
+    tau_o = float(cfg["evidence"].get("oppose_threshold", 0.9))
+
+    def prob(p, lab):
+        try:
+            return float((ast.literal_eval(p) if isinstance(p, str) else {}).get(lab, 0.0))
+        except (ValueError, SyntaxError):
+            return 0.0
+    ej = edges[edges.judged].copy()
+    # judges without probabilities (llm) keep their label; NLI/Nimble need high confidence (dev-calibrated)
+    has_p = ej["probs"].notna()
+    ej["sup"] = (ej.relation == "SUPPORT") & (~has_p | (ej["probs"].map(lambda p: prob(p, "SUPPORT")) >= tau_s))
+    ej["opp"] = (ej.relation == "OPPOSE") & (~has_p | (ej["probs"].map(lambda p: prob(p, "OPPOSE")) >= tau_o))
+    e_by = dict(tuple(ej.groupby("hyp_id")))
+    empty = ej.iloc[0:0]
     rows = []
     for h in hyps.itertuples():
-        e = edges[(edges.hyp_id == h.hyp_id) & edges.judged]
-        sup = e[e.relation == "SUPPORT"].review_id.tolist()
-        opp = e[e.relation == "OPPOSE"].review_id.tolist()
+        e = e_by.get(h.hyp_id, empty)
+        sup = e[e.sup].review_id.tolist()
+        if meta is not None and h.hyp_id in meta.index:   # reviews the experience was extracted from
+            sup = sorted(set(sup) | set(meta.at[h.hyp_id, "mention_reviews"]))
+        opp = [r for r in e[e.opp].review_id.tolist() if r not in set(sup)]
         unc = e[e.relation == "UNCERTAIN"].review_id.tolist()
         b = bundles[h.bundle_id]
         n_users = len({rv.at[r, "user_id"] for r in b["review_ids_ordered"]})

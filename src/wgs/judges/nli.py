@@ -14,7 +14,9 @@ MAP = {"entailment": "SUPPORT", "contradiction": "OPPOSE", "neutral": "IRRELEVAN
 
 
 class NLIJudge(Judge):
-    def __init__(self, cfg, name, spec, batch: int = 16):
+    batch_ok = True
+
+    def __init__(self, cfg, name, spec, batch: int = 64):
         import torch
         from transformers import AutoModelForSequenceClassification, AutoTokenizer
         self.torch = torch

@@ -28,14 +28,30 @@ def freq_table(cands: pd.DataFrame) -> str:
     return "\n".join(f"- {a} ({p}): {u}" for u, a, p in rows[:25])
 
 
-def render_plan(plan: pd.DataFrame) -> str:
+def freq_words(n: int, n_total: int) -> str:
+    """Frequency phrase instead of raw counts (counts from automatic evidence are noisy)."""
+    if n <= 0:
+        return "no reviewer"
+    if n == 1:
+        return "one reviewer"
+    share = n / max(1, n_total)
+    if share > 0.5:
+        return "most reviewers"
+    if share >= 0.25 or n >= 6:
+        return "many reviewers"
+    if n >= 4:
+        return "several reviewers"
+    return "a few reviewers"
+
+
+def render_plan(plan: pd.DataFrame, n_total: int = 30) -> str:
     lines = []
     for i, p in enumerate(plan.sort_values("rank").itertuples(), 1):
         cond = f" [condition: {p.condition}]" if p.condition else ""
         quote = f" Example: \"{p.quote}\"" if getattr(p, "quote", "") else ""
-        lines.append(f"{i}. {p.proposition}{cond} - supported by {p.support_users} reviewer(s); "
-                     f"opposite reported by {p.oppose_users}.{quote}")
-    return "\n".join(lines) if lines else "(no verified experiences)"
+        # opposition is not verbalized: automatic OPPOSE precision is < 0.6 at every threshold on dev gold
+        lines.append(f"{i}. {p.proposition}{cond} - reported by {freq_words(p.support_users, n_total)}.{quote}")
+    return chr(10).join(lines) if lines else "(no verified experiences)"
 
 
 def build_prompt(cfg: Config, bundle: dict, method: str, planner: str | None) -> tuple[str, str]:
@@ -53,7 +69,7 @@ def build_prompt(cfg: Config, bundle: dict, method: str, planner: str | None) ->
             raise RuntimeError("plan method needs plans.parquet; run `wgs plan`")
         sel = plans[(plans.bundle_id == bundle["bundle_id"]) & (plans.planner == planner)
                     & plans.selected]
-        kw = {"category": kw["category"], "n_reviewers": len(revs), "plan": render_plan(sel)}
+        kw = {"category": kw["category"], "n_reviewers": len(revs), "plan": render_plan(sel, len(revs))}
     name = prompts.SUMMARY_METHODS[method]
     return prompts.render(name, **kw), prompts.prompt_hash(name)
 

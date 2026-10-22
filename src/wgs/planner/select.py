@@ -67,3 +67,34 @@ def frequency_scores(table: pd.DataFrame, verified: bool = True) -> tuple[np.nda
     if verified:
         return table["support_users"].to_numpy(float), (table["support_users"] > 0).to_numpy()
     return table["mention_users"].to_numpy(float), (table["mention_users"] > 0).to_numpy()
+
+
+def agent_scores(table: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
+    """Training-free selection score of the evidence agent (fixed before any test result):
+    verified support (log, distinct users) weighted by specificity, plus bonuses for decision-relevant
+    signals that frequency ranking under-serves: negative/mixed experiences and stated conditions;
+    penalty for evidence the judge was unsure about. Group signals (D/U, verified purchase) unused."""
+    sup = np.log1p(table["support_users"].to_numpy(float))
+    spec = table["specificity"].to_numpy(float)
+    neg = table["polarity"].isin(["negative", "mixed"]).to_numpy(float)
+    cond = table["condition_present"].to_numpy(float)
+    unc = table["uncertain_ratio"].to_numpy(float)
+    generic = (table["aspect"] == "overall").to_numpy(float)
+    score = sup * (0.5 + spec) + 0.5 * neg * (sup > 0) + 0.3 * cond * (sup > 0) - 0.5 * unc - 0.5 * generic
+    return score, (table["support_users"] >= 1).to_numpy()
+
+
+def diversify(table: pd.DataFrame, scores: np.ndarray, eligible: np.ndarray, max_per_aspect: int = 2) -> np.ndarray:
+    """Make candidates beyond the first `max_per_aspect` per (bundle, aspect) ineligible, so the
+    budget spreads over aspects instead of repeating the most frequent one."""
+    out = eligible.copy()
+    order = np.lexsort((-scores, table["aspect"].to_numpy(), table["bundle_id"].to_numpy()))
+    seen = {}
+    for i in order:
+        if not out[i]:
+            continue
+        k = (table["bundle_id"].iat[i], table["aspect"].iat[i])
+        seen[k] = seen.get(k, 0) + 1
+        if seen[k] > max_per_aspect:
+            out[i] = False
+    return out

@@ -1,0 +1,19 @@
+You are revising a product-review summary so that every statement is supported by the evidence plan.
+The statements listed under UNSUPPORTED could not be verified against the customer reviews.
+Rewrite the summary in 100-120 English words:
+- Remove or correct each UNSUPPORTED statement; do not restate it in other words.
+- Keep every other statement, with its condition and a frequency wording consistent with the counts.
+- You may use only the evidence plan; add no new experience, product fact, or judgment.
+Return only the revised summary.
+
+Product category: {category}
+Number of reviewers in the input: {n_reviewers}
+
+Evidence plan:
+{plan}
+
+Current summary:
+{summary}
+
+UNSUPPORTED:
+{unsupported}

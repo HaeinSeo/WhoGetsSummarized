@@ -76,20 +76,22 @@ def summary_metrics(cfg: Config, judge: str, scope: str = "topk:10",
     else:
         groups = rv[group_col].to_dict()
     rows = []
+    e_by = dict(tuple(edges.groupby("summary_id")))
+    c_by = dict(tuple(claims.groupby("summary_id")))
     for s in sums.itertuples():
         b = bundles.get(s.bundle_id)
-        if b is None:
+        e = e_by.get(s.summary_id)
+        if b is None or e is None or e.empty:  # not judged in this edge file -> skip, never 0
             continue
         rids = b["review_ids_ordered"]
         group_of = {r: groups.get(r, "unlabeled") for r in rids}
         user_of = {r: rv.at[r, "user_id"] for r in rids}
-        e = edges[edges.summary_id == s.summary_id]
-        if e.empty:  # not judged in this edge file (e.g. cohort-restricted scope) -> skip, never 0
-            continue
-        c_all = claims[claims.summary_id == s.summary_id]
+        c_all = c_by.get(s.summary_id, claims.iloc[0:0])
         valid = c_all[c_all["valid"]]
-        support = {c: set(e[(e.hyp_id == c) & (e.relation == "SUPPORT")].review_id) for c in valid.claim_id}
-        judged_claims = [c for c in valid.claim_id if e[e.hyp_id == c].judged.any()]
+        sup_e = e[e.relation == "SUPPORT"].groupby("hyp_id")["review_id"].apply(set).to_dict()
+        judged_ids = set(e.loc[e.judged, "hyp_id"])
+        support = {c: sup_e.get(c, set()) for c in valid.claim_id}
+        judged_claims = [c for c in valid.claim_id if c in judged_ids]
         rep = representation(group_of, user_of, support)
         rows.append({
             "summary_id": s.summary_id, "bundle_id": s.bundle_id, "product_id": s.product_id,

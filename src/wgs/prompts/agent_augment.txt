@@ -1,0 +1,19 @@
+Revise the product-review summary below using the verified evidence. Requirements:
+- Remove or correct every statement listed under UNSUPPORTED; do not restate it in other words.
+- Add every experience listed under MISSING, briefly, keeping its condition and frequency words.
+- Keep all other statements. Use frequency words ("one reviewer", "a few", "several", "many", "most");
+  never exact counts. Add no product fact, judgment, or experience that is not in the summary or MISSING.
+- The result must be 100-120 English words; shorten wording rather than dropping MISSING items.
+Return only the revised summary.
+
+Product category: {category}
+Number of reviewers in the input: {n_reviewers}
+
+Summary:
+{summary}
+
+UNSUPPORTED:
+{unsupported}
+
+MISSING (verified in the reviews):
+{missing}

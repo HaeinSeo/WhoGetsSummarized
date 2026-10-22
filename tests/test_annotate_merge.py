@@ -45,3 +45,46 @@ def test_invalid_label_rejected(tmp_path):
         assert False, "lowercase label must be rejected"
     except ValueError:
         pass
+
+
+def test_pack_excludes_keys_and_unpack_validates(tmp_path):
+    import zipfile
+    cfg = _cfg(tmp_path)
+    d = cfg.annotations_dir / "pair"
+    d.mkdir(parents=True)
+    pd.DataFrame({"item_id": ["p1"], "hyp_id": ["h"], "review_id": ["r"]}).to_csv(d / "_key.csv", index=False)
+    for a in ("A1", "A2"):
+        pd.DataFrame({"item_id": ["p1"], "relation": [""], "condition_match": [""]}).to_csv(d / f"{a}.csv", index=False)
+    z = annotate.pack(cfg, "A2")
+    names = zipfile.ZipFile(z).namelist()
+    assert "pair/A2.csv" in names and not any("_key" in n or "A1" in n for n in names)
+    ret = tmp_path / "ret.zip"
+    with zipfile.ZipFile(ret, "w") as w:
+        w.writestr("pair/A2.csv", "item_id,relation,condition_match\np1,SUPPORT,Y\n")
+    assert annotate.unpack(cfg, "A2", str(ret)) == ["pair/A2.csv"]
+    assert pd.read_csv(d / "A2.csv").relation.iloc[0] == "SUPPORT"
+    bad = tmp_path / "bad.zip"
+    with zipfile.ZipFile(bad, "w") as w:
+        w.writestr("pair/A2.csv", "item_id,relation,condition_match\np9,SUPPORT,Y\n")
+    try:
+        annotate.unpack(cfg, "A2", str(bad))
+        assert False, "changed item_ids must be rejected"
+    except ValueError:
+        pass
+
+
+def test_shrink_pairs_keeps_ids_and_labels(tmp_path):
+    import json as _j
+    cfg = _cfg(tmp_path)
+    d = cfg.annotations_dir / "pair"
+    d.mkdir(parents=True)
+    key = pd.DataFrame({"item_id": [f"p{i}" for i in range(6)], "hyp_id": list("abcdef"),
+                        "review_id": list("uvwxyz"), "bundle_id": ["b1", "b1", "b2", "b3", "s", "s"],
+                        "stratum": ["exhaustive"] * 4 + ["r01-03|nonD"] * 2})
+    key.to_csv(d / "_key.csv", index=False)
+    (d / "_meta.json").write_text(_j.dumps({"kind": "pair"}))
+    pd.DataFrame({"item_id": key.item_id, "relation": ["SUPPORT"] + [""] * 5}).to_csv(d / "A1.csv", index=False)
+    rep = annotate.shrink_pairs(cfg, keep_products=1)
+    a1 = pd.read_csv(d / "A1.csv", dtype=str, keep_default_na=False)
+    assert rep["after"] < rep["before"] and {"p4", "p5"} <= set(a1.item_id)
+    assert set(a1.item_id) <= set(key.item_id)

@@ -12,7 +12,7 @@ from .. import data
 from ..config import Config
 from ..storage import log_step, read_jsonl
 from .features import candidate_table, embed_features
-from .select import frequency_scores, write_plans
+from .select import agent_scores, diversify, frequency_scores, write_plans
 
 log = logging.getLogger(__name__)
 
@@ -155,3 +155,12 @@ def plan_aep(cfg: Config, checkpoint: str, judge: str, scope: str, name: str | N
             r_all[idx], q_all[idx], s_all[idx] = r.numpy(), q.numpy(), s.numpy()
     eligible = r_all >= 0.5
     return write_plans(cfg, name or f"aep_{ck['variant']}", table, s_all, cand_emb, eligible, r_all, q_all)
+
+
+def plan_agent(cfg: Config, judge: str, scope: str) -> pd.DataFrame:
+    """Evidence agent planner: verified, specific, decision-relevant, aspect-diverse experiences."""
+    table, _, cand_emb, emb = _features(cfg, judge, scope)
+    emb.save()
+    scores, eligible = agent_scores(table)
+    eligible = diversify(table, scores, eligible, max_per_aspect=2)
+    return write_plans(cfg, "agent", table, scores, cand_emb, eligible)

@@ -92,3 +92,15 @@ Days 13-14: buffer, figures, writing (abstract 11/9, paper 11/16 AoE).
 - Figure 1: joint coverage and removal error (auto on all pairs, human-validated subset).
 - Table 2: judge vs human (macro-F1, SUPPORT/OPPOSE P/R, D vs nonD), retrieval recall@K, rule D precision.
 - Figure 2: RR/RG/Amp/F on test_disclosure + du resampling, with an omitted-experience example.
+
+## Update 2026-10-18 - inventory gold from the cross-check folder
+The inventories were adjudicated in `annotations/www/cross_check/` (AI adjudication of the two human
+inventories; `human_adjudicator_signoff: false`). Use it as follows:
+1. `python -m wgs inventory-agreement @C --a1-dir annotations/www/complete/www_A1_20261017_1401/inventory --a2-dir annotations/www/complete/www_A2_20261005_1221/inventory --cross-check-dir annotations/www/cross_check`
+2. `python -m wgs annotate inventory-gold @C --source-dir annotations/www/cross_check/inventory --adjudicator ai`
+   (add `--human-signoff` only after a human has reviewed the adjudication files)
+3. After the B2/B3 summaries exist: `python -m wgs eval-gold-recall @C --judge nimble`
+   -> recall on all gold experiences and on `human_agreed` (found by both annotators; primary)
+4. `python -m wgs annotate export @C --kind summary --n 400` -> both annotators -> `annotate merge @C --kind summary`
+5. `python -m wgs eval-presence @C --judge nimble` (judge presence vs human, reported with the recall)
+Pair sheet reduction (keeps item ids and any labels): `python -m wgs annotate shrink-pair @C --keep-products 2 --model qwen3:8b`
