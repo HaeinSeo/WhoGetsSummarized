@@ -118,6 +118,23 @@ const LOCAL = {
   zh: { title: "分析你自己的评论", hint: "每行粘贴一条评论，至少 3 条。在你的电脑上运行，不会上传任何内容。", go: "分析粘贴的评论", ph: "非常好用，每天都在用。\n\n两周后就坏了……", on: "本地后端已连接", off: "本地后端未运行", running: "正在你的电脑上分析（约一分钟）...", few: "请至少粘贴 3 条（每条 20 字以上）。", fail: "分析失败", heading: "你的评论", sub: (m, j) => `本地运行 · ${m} · 判定器：NLI（英文基准，未针对此输入验证）` },
 };
 
+Object.assign(LOCAL.en, {
+  fetching: "Fetching public App Store reviews on your computer (about a minute)...",
+  fromStore: (c, id, n, d) => `Fetched ${n} reviews from the App Store (${c.toUpperCase()}); ${d} non-English dropped · judge: NLI (English)`,
+});
+Object.assign(LOCAL.ko, {
+  fetching: "내 컴퓨터에서 공개 App Store 리뷰를 가져오는 중 (약 1분)...",
+  fromStore: (c, id, n, d) => `App Store(${c.toUpperCase()})에서 리뷰 ${n}개 수집; 영어가 아닌 리뷰 ${d}개 제외 · 판정기: NLI (영어)`,
+});
+Object.assign(LOCAL.ja, {
+  fetching: "お使いのPCで公開App Storeのレビューを取得中（約1分）...",
+  fromStore: (c, id, n, d) => `App Store(${c.toUpperCase()})からレビュー ${n}件取得; 英語以外 ${d}件を除外 · 判定器: NLI（英語）`,
+});
+Object.assign(LOCAL.zh, {
+  fetching: "正在你的电脑上获取公开的 App Store 评论（约一分钟）...",
+  fromStore: (c, id, n, d) => `从 App Store（${c.toUpperCase()}）获取 ${n} 条评论；排除 ${d} 条非英文评论 · 判定器：NLI（英文）`,
+});
+
 let lang = "en";
 let data = null;
 let current = null;
@@ -235,8 +252,10 @@ function render() {
   $("stats").textContent = s.stats({ claims: r.claims.length, words: r.word_count });
   if (p.local) {
     const L = LOCAL[lang];
-    $("meta").textContent = L.sub(p.b0.model, p.b0.judge);
-    $("product-title").textContent = L.heading;
+    $("meta").textContent = p.source
+      ? L.fromStore(p.source.country, p.source.app_id, p.source.fetched, p.source.dropped_non_english)
+      : L.sub(p.b0.model, p.b0.judge);
+    $("product-title").textContent = p.source ? `App Store · ${p.source.app_id}` : L.heading;
     document.querySelector(".seg").hidden = true;
   } else {
     $("meta").textContent = s.meta(p);
@@ -330,6 +349,31 @@ async function analyzeLocal() {
   }
 }
 
+// App Store link: the local backend fetches public reviews itself, then analyzes them.
+async function analyzeAppStore(url) {
+  const L = LOCAL[lang];
+  $("status").textContent = L.fetching;
+  try {
+    const r = await fetch(`${BACKEND}/analyze-url`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url, max_reviews: 100 }),
+    });
+    const body = await r.json();
+    if (!r.ok) throw new Error(body.detail || r.statusText);
+    const src = body.source;
+    current = { product_id: "APPSTORE", category: "app", n_reviews: body.n_reviews, local: true,
+                source: src, b0: body, agent: body };
+    view = "b0";
+    $("status").textContent = "";
+    $("result").hidden = false;
+    render();
+    $("result").scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (e) {
+    $("status").textContent = `${L.fail}: ${e.message}`;
+  }
+}
+
 function initChips() {
   const box = $("chips");
   box.textContent = "";
@@ -352,6 +396,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("lang").addEventListener("change", (e) => { lang = e.target.value; applyLang(); });
   $("form").addEventListener("submit", (e) => {
     e.preventDefault();
+    if (/apps\.apple\.com\//i.test($("url").value)) { analyzeAppStore($("url").value); return; }
     const asin = parseAsin($("url").value);
     if (!asin) { $("status").textContent = t().badInput; $("result").hidden = true; return; }
     show(asin);
