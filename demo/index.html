@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Who Gets Summarized? - evidence highlight demo</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1 id="t-title">Who Gets Summarized?</h1>
+    <select id="lang" aria-label="Language">
+      <option value="en">English</option>
+      <option value="ko">한국어</option>
+      <option value="ja">日本語</option>
+      <option value="zh">中文</option>
+    </select>
+  </header>
+
+  <main>
+    <p id="t-intro" class="intro"></p>
+
+    <form id="form">
+      <input id="url" type="text" autocomplete="off" spellcheck="false">
+      <button type="submit" id="t-go"></button>
+    </form>
+    <p class="hint" id="t-hint"></p>
+    <p class="status" id="status" role="status"></p>
+
+    <section id="result" hidden>
+      <div class="controls">
+        <div class="seg" role="tablist">
+          <button type="button" data-view="agent" id="t-view-agent" class="on"></button>
+          <button type="button" data-view="b0" id="t-view-b0"></button>
+        </div>
+        <div class="meta" id="meta"></div>
+      </div>
+
+      <div class="legend">
+        <span class="chip multi" id="t-leg-multi"></span>
+        <span class="chip single" id="t-leg-single"></span>
+        <span class="chip none" id="t-leg-none"></span>
+      </div>
+
+      <article class="summary" id="summary"></article>
+      <p class="stats" id="stats"></p>
+      <p class="note" id="t-note"></p>
+    </section>
+  </main>
+
+  <footer>
+    <p id="t-footer"></p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
