@@ -35,6 +35,7 @@ def _cfg():
 class AnalyzeIn(BaseModel):
     reviews_text: str = Field(..., description="One review per line or blank-line-separated block")
     category: str = "product"
+    language: str = Field("auto", description="auto | en | ko | ja | zh")
 
 
 @app.get("/health")
@@ -73,6 +74,6 @@ def analyze_endpoint(body: AnalyzeIn) -> dict:
     if len(reviews) < 3:
         raise HTTPException(status_code=422, detail="Paste at least 3 reviews (20+ characters each).")
     try:
-        return analyze(_cfg(), reviews, category=body.category)
+        return analyze(_cfg(), reviews, category=body.category, language=body.language)
     except Exception as e:  # surface the reason instead of a bare 500
         raise HTTPException(status_code=503, detail=f"analysis failed: {e}") from e

@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en" data-mode="test">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Who Gets Summarized? · TEST</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-mode="test">
+  <div class="aurora" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/bunny.webp" alt="" class="mascot-mini">
+      <span id="t-title"></span>
+    </div>
+    <select id="lang" aria-label="Language">
+      <option value="en">English</option>
+      <option value="ko">한국어</option>
+      <option value="ja">日本語</option>
+      <option value="zh">中文</option>
+    </select>
+  </header>
+
+  <main>
+    <section class="hero">
+      <img src="assets/bunny.webp" alt="" class="mascot">
+      <div class="bubble">
+        <p id="t-intro"></p>
+      </div>
+    </section>
+
+    <section class="glass input-card">
+      <form id="form">
+        <input id="url" type="text" autocomplete="off" spellcheck="false">
+        <button type="submit" id="t-go"></button>
+      </form>
+      <p class="hint" id="t-hint"></p>
+      <div class="chips test-only" id="chips"></div>
+      <p class="status" id="status" role="status"></p>
+    </section>
+
+    <section class="glass input-card local-card" id="local-card">
+      <h3 id="t-local-title"></h3>
+      <p class="hint" id="t-local-hint"></p>
+      <textarea id="reviews-in" rows="6" spellcheck="false"></textarea>
+      <div class="local-row">
+        <button type="button" id="t-local-go" class="btn-ghost"></button>
+        <select id="lang-override" class="test-only" aria-label="Summary language">
+          <option value="auto">auto</option>
+          <option value="en">en</option>
+          <option value="ko">ko</option>
+          <option value="ja">ja</option>
+          <option value="zh">zh</option>
+        </select>
+        <span class="backend" id="backend"></span>
+      </div>
+    </section>
+
+    <section id="result" hidden>
+      <div class="product glass">
+        <div class="photo-col">
+          <div class="photo" id="photo">
+            <img id="photo-img" alt="" hidden>
+            <div class="photo-empty" id="photo-empty"></div>
+          </div>
+          <div class="photo-tools">
+            <label class="btn-ghost">
+              <span id="t-pick"></span>
+              <input type="file" id="photo-file" accept="image/*" hidden>
+            </label>
+            <input id="photo-url" type="text" autocomplete="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="info-col">
+          <div class="kicker" id="meta"></div>
+          <h2 id="product-title"></h2>
+          <div class="bars" id="bars"></div>
+        </div>
+      </div>
+
+      <div class="glass summary-card">
+        <div class="card-head">
+          <div class="seg" role="tablist">
+            <button type="button" data-view="agent" id="t-view-agent" class="on"></button>
+            <button type="button" data-view="b0" id="t-view-b0"></button>
+          </div>
+          <div class="legend">
+            <span class="chip multi" id="t-leg-multi"></span>
+            <span class="chip single" id="t-leg-single"></span>
+            <span class="chip none" id="t-leg-none"></span>
+          </div>
+        </div>
+        <article class="summary" id="summary"></article>
+        <p class="stats" id="stats"></p>
+        <p class="judge-note" id="judge-note" hidden></p>
+      </div>
+
+      <section class="glass debug test-only" id="debug" hidden>
+        <h3>Claims and support</h3>
+        <table class="claims" id="claims-table"></table>
+        <details>
+          <summary>raw JSON</summary>
+          <pre id="raw"></pre>
+        </details>
+      </section>
+
+      <p class="note glass" id="t-note"></p>
+    </section>
+  </main>
+
+  <footer>
+    <p id="t-footer"></p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

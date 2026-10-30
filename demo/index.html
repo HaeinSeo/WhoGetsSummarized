@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-mode="user">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Who Gets Summarized? · evidence highlight demo</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-mode="user">
   <div class="aurora" aria-hidden="true"></div>
 
   <header class="topbar">
@@ -36,7 +36,7 @@
         <button type="submit" id="t-go"></button>
       </form>
       <p class="hint" id="t-hint"></p>
-      <div class="chips" id="chips"></div>
+      <div class="chips test-only" id="chips"></div>
       <p class="status" id="status" role="status"></p>
     </section>
 
@@ -46,6 +46,13 @@
       <textarea id="reviews-in" rows="6" spellcheck="false"></textarea>
       <div class="local-row">
         <button type="button" id="t-local-go" class="btn-ghost"></button>
+        <select id="lang-override" class="test-only" aria-label="Summary language">
+          <option value="auto">auto</option>
+          <option value="en">en</option>
+          <option value="ko">ko</option>
+          <option value="ja">ja</option>
+          <option value="zh">zh</option>
+        </select>
         <span class="backend" id="backend"></span>
       </div>
     </section>
@@ -86,7 +93,17 @@
         </div>
         <article class="summary" id="summary"></article>
         <p class="stats" id="stats"></p>
+        <p class="judge-note" id="judge-note" hidden></p>
       </div>
+
+      <section class="glass debug test-only" id="debug" hidden>
+        <h3>Claims and support</h3>
+        <table class="claims" id="claims-table"></table>
+        <details>
+          <summary>raw JSON</summary>
+          <pre id="raw"></pre>
+        </details>
+      </section>
 
       <p class="note glass" id="t-note"></p>
     </section>

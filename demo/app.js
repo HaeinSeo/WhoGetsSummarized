@@ -112,10 +112,10 @@ const I18N = {
 // Local analysis of pasted reviews (needs the backend: python -m uvicorn wgs.serve:app --port 8000).
 const BACKEND = "http://127.0.0.1:8000";
 const LOCAL = {
-  en: { title: "Analyze your own reviews", hint: "Paste 3+ reviews, one per line. Runs on your computer; nothing is uploaded.", go: "Analyze pasted reviews", ph: "Great product, works every day.\n\nBroke after two weeks...", on: "Local backend connected", off: "Local backend not running", running: "Analyzing on your computer (about a minute)...", few: "Paste at least 3 reviews (20+ characters each).", fail: "Analysis failed", heading: "Your reviews", sub: (m, j) => `Local run · ${m} · judge: NLI (English, not validated for this input)` },
-  ko: { title: "내 리뷰 직접 분석", hint: "리뷰를 한 줄에 하나씩 3개 이상 붙여넣으세요. 내 컴퓨터에서 실행되며 아무것도 업로드되지 않습니다.", go: "붙여넣은 리뷰 분석", ph: "정말 좋아요, 매일 잘 써요.\n\n2주 만에 망가졌어요...", on: "로컬 백엔드 연결됨", off: "로컬 백엔드가 꺼져 있음", running: "내 컴퓨터에서 분석 중 (약 1분)...", few: "20자 이상 리뷰를 3개 이상 붙여넣으세요.", fail: "분석 실패", heading: "내 리뷰", sub: (m, j) => `로컬 실행 · ${m} · 판정기: NLI (영어 기준, 이 입력에 대해 미검증)` },
-  ja: { title: "自分のレビューを分析", hint: "レビューを1行に1件、3件以上貼り付けてください。お使いのPCで実行され、何もアップロードされません。", go: "貼り付けたレビューを分析", ph: "とても良い商品です。毎日使っています。\n\n2週間で壊れました...", on: "ローカルバックエンド接続中", off: "ローカルバックエンドが停止中", running: "お使いのPCで分析中（約1分）...", few: "20文字以上のレビューを3件以上貼り付けてください。", fail: "分析に失敗しました", heading: "あなたのレビュー", sub: (m, j) => `ローカル実行 · ${m} · 判定器: NLI（英語基準、この入力では未検証）` },
-  zh: { title: "分析你自己的评论", hint: "每行粘贴一条评论，至少 3 条。在你的电脑上运行，不会上传任何内容。", go: "分析粘贴的评论", ph: "非常好用，每天都在用。\n\n两周后就坏了……", on: "本地后端已连接", off: "本地后端未运行", running: "正在你的电脑上分析（约一分钟）...", few: "请至少粘贴 3 条（每条 20 字以上）。", fail: "分析失败", heading: "你的评论", sub: (m, j) => `本地运行 · ${m} · 判定器：NLI（英文基准，未针对此输入验证）` },
+  en: { title: "Analyze your own reviews", hint: "Paste 3+ reviews, one per line. Runs on your computer; nothing is uploaded.", go: "Analyze pasted reviews", ph: "Great product, works every day.\n\nBroke after two weeks...", on: "Local backend connected", off: "Local backend not running", running: "Analyzing on your computer (about a minute)...", few: "Paste at least 3 reviews (20+ characters each).", fail: "Analysis failed", heading: "Your reviews", sub: (m, j) => `Local run · ${m} · judge: ${j}` },
+  ko: { title: "내 리뷰 직접 분석", hint: "리뷰를 한 줄에 하나씩 3개 이상 붙여넣으세요. 내 컴퓨터에서 실행되며 아무것도 업로드되지 않습니다.", go: "붙여넣은 리뷰 분석", ph: "정말 좋아요, 매일 잘 써요.\n\n2주 만에 망가졌어요...", on: "로컬 백엔드 연결됨", off: "로컬 백엔드가 꺼져 있음", running: "내 컴퓨터에서 분석 중 (약 1분)...", few: "20자 이상 리뷰를 3개 이상 붙여넣으세요.", fail: "분석 실패", heading: "내 리뷰", sub: (m, j) => `로컬 실행 · ${m} · 판정기: ${j}` },
+  ja: { title: "自分のレビューを分析", hint: "レビューを1行に1件、3件以上貼り付けてください。お使いのPCで実行され、何もアップロードされません。", go: "貼り付けたレビューを分析", ph: "とても良い商品です。毎日使っています。\n\n2週間で壊れました...", on: "ローカルバックエンド接続中", off: "ローカルバックエンドが停止中", running: "お使いのPCで分析中（約1分）...", few: "20文字以上のレビューを3件以上貼り付けてください。", fail: "分析に失敗しました", heading: "あなたのレビュー", sub: (m, j) => `ローカル実行 · ${m} · 判定器: ${j}` },
+  zh: { title: "分析你自己的评论", hint: "每行粘贴一条评论，至少 3 条。在你的电脑上运行，不会上传任何内容。", go: "分析粘贴的评论", ph: "非常好用，每天都在用。\n\n两周后就坏了……", on: "本地后端已连接", off: "本地后端未运行", running: "正在你的电脑上分析（约一分钟）...", few: "请至少粘贴 3 条（每条 20 字以上）。", fail: "分析失败", heading: "你的评论", sub: (m, j) => `本地运行 · ${m} · 判定器：${j}` },
 };
 
 Object.assign(LOCAL.en, {
@@ -135,6 +135,20 @@ Object.assign(LOCAL.zh, {
   fromStore: (c, id, n, d) => `从 App Store（${c.toUpperCase()}）获取 ${n} 条评论；排除 ${d} 条非英文评论 · 判定器：NLI（英文）`,
 });
 
+Object.assign(LOCAL.en, {
+  judgeNote: (l) => `Judged with a multilingual NLI model for ${l}. This is not validated yet, so treat the counts as indicative.`,
+});
+Object.assign(LOCAL.ko, {
+  judgeNote: (l) => `${l} 리뷰는 다국어 NLI 판정기로 판단했습니다. 아직 검증되지 않아 개수는 참고용입니다.`,
+});
+Object.assign(LOCAL.ja, {
+  judgeNote: (l) => `${l}のレビューは多言語NLI判定器で判定しました。まだ検証されていないため、件数は参考値です。`,
+});
+Object.assign(LOCAL.zh, {
+  judgeNote: (l) => `${l}评论使用多语言 NLI 判定器判断。尚未验证，数量仅供参考。`,
+});
+
+const MODE = document.body.dataset.mode || "user";
 let lang = "en";
 let data = null;
 let current = null;
@@ -204,6 +218,40 @@ function classOf(c) {
   return "multi";
 }
 
+// Non-English results use a multilingual judge that is not validated yet; say so on the user page too.
+function renderJudgeNote(p) {
+  const note = $("judge-note");
+  const unvalidated = p.b0 && p.b0.judge_validated === false;
+  note.hidden = !unvalidated;
+  note.textContent = unvalidated ? LOCAL[lang].judgeNote(p.b0.language_name || p.b0.language) : "";
+}
+
+// Test page only: claim table with per-claim support, and the raw response.
+function renderDebug(p, r) {
+  const box = $("debug");
+  if (MODE !== "test") return;
+  box.hidden = false;
+  const tbl = $("claims-table");
+  tbl.textContent = "";
+  const head = document.createElement("tr");
+  ["#", "support", "reviews", "proposition"].forEach((h) => {
+    const th = document.createElement("th");
+    th.textContent = h;
+    head.appendChild(th);
+  });
+  tbl.appendChild(head);
+  r.claims.forEach((c, i) => {
+    const tr = document.createElement("tr");
+    [String(i + 1), String(c.n_support), c.reviews.join(", ") || "-", c.proposition || ""].forEach((v) => {
+      const td = document.createElement("td");
+      td.textContent = v;
+      tr.appendChild(td);
+    });
+    tbl.appendChild(tr);
+  });
+  $("raw").textContent = JSON.stringify({ ...r, claims: r.claims }, null, 2);
+}
+
 function renderBars(r) {
   const s = t();
   const n = r.claims.length || 1;
@@ -263,6 +311,8 @@ function render() {
     document.querySelector(".seg").hidden = false;
   }
   renderBars(r);
+  renderJudgeNote(p);
+  renderDebug(p, r);
   document.querySelectorAll(".seg button").forEach((b) => b.classList.toggle("on", b.dataset.view === view));
 }
 
@@ -332,7 +382,11 @@ async function analyzeLocal() {
     const r = await fetch(`${BACKEND}/analyze`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reviews_text: text, category: "product" }),
+      body: JSON.stringify({
+        reviews_text: text,
+        category: "product",
+        language: MODE === "test" ? $("lang-override").value : "auto",
+      }),
     });
     const body = await r.json();
     if (!r.ok) throw new Error(body.detail || r.statusText);
@@ -376,6 +430,7 @@ async function analyzeAppStore(url) {
 
 function initChips() {
   const box = $("chips");
+  if (MODE !== "test" || !box) return;
   box.textContent = "";
   data.products.forEach((p) => {
     const b = document.createElement("button");

@@ -1,0 +1,12 @@
+Summarize the customer experiences in the supplied reviews in {language}.
+Use only these reviews. Preserve relevant conditions and disagreements.
+Describe both positive and negative experiences when supported.
+Do not turn a single report into a claim about all customers.
+Do not infer product facts or the trustworthiness of a reviewer from outside knowledge.
+Length: 3 to 5 sentences.
+Return only the summary, written in {language}.
+
+Product category: {category}
+
+Reviews:
+{reviews}
