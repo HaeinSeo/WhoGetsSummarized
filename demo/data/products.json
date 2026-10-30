@@ -1,0 +1,2258 @@
+{
+ "model": "qwen3:8b",
+ "agent_method": "agent2_k2",
+ "judge": "nli",
+ "generated_by": "scripts/build_demo_data.py",
+ "products": [
+  {
+   "product_id": "B000OFL8QG",
+   "category": "Beauty_and_Personal_Care",
+   "n_reviews": 30,
+   "b0": {
+    "text": "Customers had mixed experiences with the pumice stone. Many praised its effectiveness for removing dead skin, with several noting its natural composition and ease of use. Some appreciated its size and shape, while others found it too small or lightweight. A few mentioned issues like crumbling, mold growth, or small particles coming off the stone. Despite these drawbacks, most users found the product reliable for its intended purpose, with some highlighting its durability and results. A few reviews noted the stone's versatility beyond foot care, such as cleaning toilets or use in DIY projects. Overall, the product met expectations for many, though individual experiences varied.",
+    "word_count": 105,
+    "claims": [
+     {
+      "start": 0,
+      "end": 54,
+      "n_support": 1,
+      "reviews": [
+       "R15"
+      ]
+     },
+     {
+      "start": 55,
+      "end": 108,
+      "n_support": 3,
+      "reviews": [
+       "R02",
+       "R08",
+       "R18"
+      ]
+     },
+     {
+      "start": 110,
+      "end": 169,
+      "n_support": 5,
+      "reviews": [
+       "R03",
+       "R08",
+       "R15",
+       "R19",
+       "R21"
+      ]
+     },
+     {
+      "start": 110,
+      "end": 169,
+      "n_support": 2,
+      "reviews": [
+       "R02",
+       "R19"
+      ]
+     },
+     {
+      "start": 171,
+      "end": 206,
+      "n_support": 3,
+      "reviews": [
+       "R02",
+       "R08",
+       "R26"
+      ]
+     },
+     {
+      "start": 208,
+      "end": 254,
+      "n_support": 0,
+      "reviews": []
+     },
+     {
+      "start": 208,
+      "end": 254,
+      "n_support": 0,
+      "reviews": []
+     },
+     {
+      "start": 256,
+      "end": 347,
+      "n_support": 1,
+      "reviews": [
+       "R02"
+      ]
+     },
+     {
+      "start": 256,
+      "end": 347,
+      "n_support": 0,
+      "reviews": []
+     },
+     {
+      "start": 256,
+      "end": 347,
+      "n_support": 3,
+      "reviews": [
+       "R02",
+       "R08",
+       "R15"
+      ]
+     },
+     {
+      "start": 349,
+      "end": 436,
+      "n_support": 3,
+      "reviews": [
+       "R02",
+       "R04",
+       "R19"
+      ]
+     },
+     {
+      "start": 438,
+      "end": 487,
+      "n_support": 1,
+      "reviews": [
+       "R02"
+      ]
+     },
+     {
+      "start": 489,
+      "end": 598,
+      "n_support": 2,
+      "reviews": [
+       "R02",
+       "R18"
+      ]
+     },
+     {
+      "start": 600,
+      "end": 684,
+      "n_support": 17,
+      "reviews": [
+       "R01",
+       "R02",
+       "R04",
+       "R05",
+       "R06",
+       "R07",
+       "R09",
+       "R10",
+       "R15",
+       "R16",
+       "R17",
+       "R18",
+       "R19",
+       "R20",
+       "R22",
+       "R26",
+       "R29"
+      ]
+     }
+    ]
+   },
+   "agent": {
+    "text": "Customers had mixed experiences with the pumice stone. Many praised its effectiveness for removing dead skin, with several noting its natural composition and ease of use. Some appreciated its size and shape, while one reviewer found it too small or lightweight. Most users found the product reliable for its intended purpose, with some highlighting its durability and results. Overall, the product met expectations for many, though individual experiences varied.",
+    "word_count": 69,
+    "claims": [
+     {
+      "start": 0,
+      "end": 54,
+      "n_support": 1,
+      "reviews": [
+       "R15"
+      ]
+     },
+     {
+      "start": 55,
+      "end": 108,
+      "n_support": 5,
+      "reviews": [
+       "R02",
+       "R03",
+       "R08",
+       "R09",
+       "R18"
+      ]
+     },
+     {
+      "start": 110,
+      "end": 169,
+      "n_support": 5,
+      "reviews": [
+       "R03",
+       "R08",
+       "R15",
+       "R19",
+       "R21"
+      ]
+     },
+     {
+      "start": 110,
+      "end": 169,
+      "n_support": 4,
+      "reviews": [
+       "R02",
+       "R04",
+       "R16",
+       "R19"
+      ]
+     },
+     {
+      "start": 171,
+      "end": 206,
+      "n_support": 4,
+      "reviews": [
+       "R02",
+       "R08",
+       "R26",
+       "R29"
+      ]
+     },
+     {
+      "start": 208,
+      "end": 260,
+      "n_support": 0,
+      "reviews": []
+     },
+     {
+      "start": 262,
+      "end": 324,
+      "n_support": 7,
+      "reviews": [
+       "R02",
+       "R04",
+       "R07",
+       "R09",
+       "R10",
+       "R14",
+       "R19"
+      ]
+     },
+     {
+      "start": 326,
+      "end": 375,
+      "n_support": 1,
+      "reviews": [
+       "R02"
+      ]
+     },
+     {
+      "start": 326,
+      "end": 375,
+      "n_support": 16,
+      "reviews": [
+       "R02",
+       "R03",
+       "R04",
+       "R05",
+       "R08",
+       "R09",
+       "R10",
+       "R11",
+       "R14",
+       "R16",
+       "R17",
+       "R18",
+       "R19",
+       "R22",
+       "R28",
+       "R29"
+      ]
+     },
+     {
+      "start": 377,
+      "end": 423,
+      "n_support": 17,
+      "reviews": [
+       "R01",
+       "R02",
+       "R04",
+       "R05",
+       "R06",
+       "R07",
+       "R09",
+       "R10",
+       "R15",
+       "R16",
+       "R17",
+       "R18",
+       "R19",
+       "R20",
+       "R22",
+       "R26",
+       "R29"
+      ]
+     },
+     {
+      "start": 425,
+      "end": 461,
+      "n_support": 4,
+      "reviews": [
+       "R02",
+       "R05",
+       "R07",
+       "R08"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "product_id": "B000PW13QS",
+   "category": "Beauty_and_Personal_Care",
+   "n_reviews": 30,
+   "b0": {
+    "text": "Customers had mixed experiences with the product. Many praised its effectiveness, noting it provides good hold, defines curls, and adds volume without being greasy or sticky. Some appreciated its lightweight feel and natural-looking results. However, a few found it too heavy, greasy, or sticky, with one reviewer comparing the scent to motor oil. A few mentioned the product was expensive for the amount received or not as effective as expected. While some confirmed it was recommended by stylists and used consistently, others noted it was not the same as authentic Aquage. Overall, the product received positive feedback for its performance and value, though a few concerns were raised about texture, scent, and price.",
+    "word_count": 113,
+    "claims": [
+     {
+      "start": 0,
+      "end": 49,
+      "n_support": 2,
+      "reviews": [
+       "R04",
+       "R18"
+      ]
+     },
+     {
+      "start": 50,
+      "end": 174,
+      "n_support": 5,
+      "reviews": [
+       "R08",
+       "R10",
+       "R11",
+       "R21",
+       "R23"
+      ]
+     },
+     {
+      "start": 50,
+      "end": 174,
+      "n_support": 1,
+      "reviews": [
+       "R04"
+      ]
+     },
+     {
+      "start": 50,
+      "end": 174,
+      "n_support": 3,
+      "reviews": [
+       "R08",
+       "R11",
+       "R13"
+      ]
+     },
+     {
+      "start": 50,
+      "end": 174,
+      "n_support": 6,
+      "reviews": [
+       "R02",
+       "R07",
+       "R10",
+       "R11",
+       "R12",
+       "R21"
+      ]
+     },
+     {
+      "start": 175,
+      "end": 241,
+      "n_support": 3,
+      "reviews": [
+       "R03",
+       "R07",
+       "R21"
+      ]
+     },
+     {
+      "start": 175,
+      "end": 241,
+      "n_support": 4,
+      "reviews": [
+       "R10",
+       "R11",
+       "R20",
+       "R23"
+      ]
+     },
+     {
+      "start": 242,
+      "end": 347,
+      "n_support": 0,
+      "reviews": []
+     },
+     {
+      "start": 242,
+      "end": 347,
+      "n_support": 1,
+      "reviews": [
+       "R04"
+      ]
+     },
+     {
+      "start": 242,
+      "end": 347,
+      "n_support": 1,
+      "reviews": [
+       "R04"
+      ]
+     },
+     {
+      "start": 348,
+      "end": 446,
+      "n_support": 2,
+      "reviews": [
+       "R07",
+       "R22"
+      ]
+     },
+     {
+      "start": 348,
+      "end": 446,
+      "n_support": 1,
+      "reviews": [
+       "R15"
+      ]
+     },
+     {
+      "start": 447,
+      "end": 575,
+      "n_support": 2,
+      "reviews": [
+       "R02",
+       "R30"
+      ]
+     },
+     {
+      "start": 447,
+      "end": 575,
+      "n_support": 2,
+      "reviews": [
+       "R12",
+       "R18"
+      ]
+     },
+     {
+      "start": 576,
+      "end": 721,
+      "n_support": 15,
+      "reviews": [
+       "R01",
+       "R07",
+       "R08",
+       "R10",
+       "R11",
+       "R13",
+       "R14",
+       "R17",
+       "R20",
+       "R22",
+       "R23",
+       "R25",
+       "R26",
+       "R29",
+       "R30"
+      ]
+     }
+    ]
+   },
+   "agent": {
+    "text": "Customers had mixed experiences with the product. Many praised its effectiveness, noting it provides good hold, defines curls, and adds volume without being greasy or sticky. Some appreciated its lightweight feel and natural-looking results. A few mentioned the product was expensive for the amount received or not as effective as expected. While some confirmed it was recommended by stylists and used consistently, others noted it was not the same as authentic Aquage. Overall, the product received positive feedback for its performance and value, though a few concerns were raised about texture, scent, and price.",
+    "word_count": 94,
+    "claims": [
+     {
+      "start": 0,
+      "end": 49,
+      "n_support": 2,
+      "reviews": [
+       "R04",
+       "R18"
+      ]
+     },
+     {
+      "start": 50,
+      "end": 174,
+      "n_support": 1,
+      "reviews": [
+       "R21"
+      ]
+     },
+     {
+      "start": 175,
+      "end": 241,
+      "n_support": 1,
+      "reviews": [
+       "R21"
+      ]
+     },
+     {
+      "start": 242,
+      "end": 340,
+      "n_support": 1,
+      "reviews": [
+       "R07"
+      ]
+     },
+     {
+      "start": 341,
+      "end": 469,
+      "n_support": 2,
+      "reviews": [
+       "R12",
+       "R18"
+      ]
+     },
+     {
+      "start": 470,
+      "end": 615,
+      "n_support": 15,
+      "reviews": [
+       "R01",
+       "R07",
+       "R08",
+       "R10",
+       "R11",
+       "R13",
+       "R14",
+       "R17",
+       "R20",
+       "R22",
+       "R23",
+       "R25",
+       "R26",
+       "R29",
+       "R30"
+      ]
+     },
+     {
+      "start": 470,
+      "end": 615,
+      "n_support": 1,
+      "reviews": [
+       "R07"
+      ]
+     },
+     {
+      "start": 470,
+      "end": 615,
+      "n_support": 1,
+      "reviews": [
+       "R11"
+      ]
+     },
+     {
+      "start": 470,
+      "end": 615,
+      "n_support": 1,
+      "reviews": [
+       "R22"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "product_id": "B000Y86EN0",
+   "category": "Electronics",
+   "n_reviews": 30,
+   "b0": {
+    "text": "Customers generally praise the MouseRug and coaster set for their attractive design, durability, and functionality. Many appreciate the aesthetic appeal, noting they receive compliments and enhance their workspace. The products are described as high quality, with some users reporting long-term use without wear or tear. The rubber backing prevents sliding, and the coasters are praised for their practicality and durability. However, a few customers mention minor issues, such as the fringe appearing funky or the rug not performing well as a mouse pad. One user expressed disappointment, stating the product was ineffective for its intended purpose. Overall, the reviews reflect a mix of satisfaction and some minor criticisms, with no consensus on all aspects.",
+    "word_count": 114,
+    "claims": [
+     {
+      "start": 0,
+      "end": 115,
+      "n_support": 7,
+      "reviews": [
+       "R02",
+       "R03",
+       "R07",
+       "R11",
+       "R18",
+       "R20",
+       "R29"
+      ]
+     },
+     {
+      "start": 0,
+      "end": 115,
+      "n_support": 6,
+      "reviews": [
+       "R02",
+       "R03",
+       "R07",
+       "R08",
+       "R11",
+       "R29"
+      ]
+     },
+     {
+      "start": 0,
+      "end": 115,
+      "n_support": 9,
+      "reviews": [
+       "R02",
+       "R03",
+       "R07",
+       "R08",
+       "R11",
+       "R16",
+       "R20",
+       "R27",
+       "R29"
+      ]
+     },
+     {
+      "start": 116,
+      "end": 214,
+      "n_support": 9,
+      "reviews": [
+       "R02",
+       "R03",
+       "R07",
+       "R08",
+       "R11",
+       "R16",
+       "R20",
+       "R25",
+       "R29"
+      ]
+     },
+     {
+      "start": 215,
+      "end": 320,
+      "n_support": 7,
+      "reviews": [
+       "R03",
+       "R07",
+       "R11",
+       "R18",
+       "R25",
+       "R27",
+       "R29"
+      ]
+     },
+     {
+      "start": 321,
+      "end": 425,
+      "n_support": 2,
+      "reviews": [
+       "R03",
+       "R29"
+      ]
+     },
+     {
+      "start": 321,
+      "end": 425,
+      "n_support": 7,
+      "reviews": [
+       "R02",
+       "R03",
+       "R07",
+       "R08",
+       "R16",
+       "R27",
+       "R29"
+      ]
+     },
+     {
+      "start": 321,
+      "end": 425,
+      "n_support": 3,
+      "reviews": [
+       "R03",
+       "R07",
+       "R29"
+      ]
+     },
+     {
+      "start": 426,
+      "end": 554,
+      "n_support": 2,
+      "reviews": [
+       "R01",
+       "R26"
+      ]
+     },
+     {
+      "start": 426,
+      "end": 554,
+      "n_support": 1,
+      "reviews": [
+       "R26"
+      ]
+     },
+     {
+      "start": 555,
+      "end": 651,
+      "n_support": 1,
+      "reviews": [
+       "R13"
+      ]
+     },
+     {
+      "start": 652,
+      "end": 763,
+      "n_support": 11,
+      "reviews": [
+       "R06",
+       "R07",
+       "R10",
+       "R12",
+       "R15",
+       "R17",
+       "R20",
+       "R22",
+       "R28",
+       "R29",
+       "R30"
+      ]
+     }
+    ]
+   },
+   "agent": {
+    "text": "Customers generally praise the MouseRug and coaster set for their attractive design, durability, and functionality. Many appreciate the aesthetic appeal, noting they receive compliments and enhance their workspace. The products are described as high quality, with many reporting wonderful quality. The rubber backing prevents sliding, and the coasters are praised for their practicality and durability. The mouse pad has wonderful quality, reported by many reviewers. However, a few customers mention minor issues, such as the fringe appearing funky or the rug not performing well as a mouse pad. One user expressed disappointment, stating the product was ineffective for its intended purpose. Overall, the reviews reflect a mix of satisfaction and some minor criticisms, with no consensus on all aspects.",
+    "word_count": 119,
+    "claims": [
+     {
+      "start": 0,
+      "end": 115,
+      "n_support": 7,
+      "reviews": [
+       "R02",
+       "R03",
+       "R07",
+       "R11",
+       "R18",
+       "R20",
+       "R29"
+      ]
+     },
+     {
+      "start": 0,
+      "end": 115,
+      "n_support": 6,
+      "reviews": [
+       "R02",
+       "R03",
+       "R07",
+       "R08",
+       "R11",
+       "R29"
+      ]
+     },
+     {
+      "start": 0,
+      "end": 115,
+      "n_support": 9,
+      "reviews": [
+       "R02",
+       "R03",
+       "R07",
+       "R08",
+       "R11",
+       "R16",
+       "R20",
+       "R27",
+       "R29"
+      ]
+     },
+     {
+      "start": 116,
+      "end": 214,
+      "n_support": 9,
+      "reviews": [
+       "R02",
+       "R03",
+       "R07",
+       "R08",
+       "R11",
+       "R16",
+       "R20",
+       "R25",
+       "R29"
+      ]
+     },
+     {
+      "start": 215,
+      "end": 297,
+      "n_support": 7,
+      "reviews": [
+       "R03",
+       "R07",
+       "R11",
+       "R18",
+       "R25",
+       "R27",
+       "R29"
+      ]
+     },
+     {
+      "start": 298,
+      "end": 402,
+      "n_support": 2,
+      "reviews": [
+       "R03",
+       "R29"
+      ]
+     },
+     {
+      "start": 298,
+      "end": 402,
+      "n_support": 7,
+      "reviews": [
+       "R02",
+       "R03",
+       "R07",
+       "R08",
+       "R16",
+       "R27",
+       "R29"
+      ]
+     },
+     {
+      "start": 298,
+      "end": 402,
+      "n_support": 3,
+      "reviews": [
+       "R03",
+       "R07",
+       "R29"
+      ]
+     },
+     {
+      "start": 403,
+      "end": 467,
+      "n_support": 9,
+      "reviews": [
+       "R03",
+       "R04",
+       "R05",
+       "R07",
+       "R11",
+       "R15",
+       "R25",
+       "R27",
+       "R29"
+      ]
+     },
+     {
+      "start": 468,
+      "end": 596,
+      "n_support": 2,
+      "reviews": [
+       "R01",
+       "R26"
+      ]
+     },
+     {
+      "start": 468,
+      "end": 596,
+      "n_support": 1,
+      "reviews": [
+       "R26"
+      ]
+     },
+     {
+      "start": 597,
+      "end": 693,
+      "n_support": 1,
+      "reviews": [
+       "R13"
+      ]
+     },
+     {
+      "start": 694,
+      "end": 805,
+      "n_support": 8,
+      "reviews": [
+       "R06",
+       "R07",
+       "R12",
+       "R15",
+       "R17",
+       "R28",
+       "R29",
+       "R30"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "product_id": "B0038WHCX0",
+   "category": "Electronics",
+   "n_reviews": 30,
+   "b0": {
+    "text": "Customers had mixed experiences with the camera bag. Many praised its versatility, durability, and ample storage, noting it could hold cameras, lenses, laptops, and other gear comfortably. Some highlighted its comfort during long hikes and its ability to fit heavy loads. However, several users found the bag too large, heavy, and uncomfortable, especially for those with larger builds, as it could strain shoulders and make wearing it for long periods difficult. A few mentioned issues with accessibility to the camera compartment, difficulty fitting in overhead bins, and the lack of certain features like water bottle pockets or side access doors. Despite these drawbacks, many users recommended the bag for its functionality and build quality.",
+    "word_count": 114,
+    "claims": [
+     {
+      "start": 0,
+      "end": 52,
+      "n_support": 8,
+      "reviews": [
+       "R02",
+       "R12",
+       "R14",
+       "R18",
+       "R20",
+       "R21",
+       "R22",
+       "R28"
+      ]
+     },
+     {
+      "start": 53,
+      "end": 188,
+      "n_support": 3,
+      "reviews": [
+       "R04",
+       "R19",
+       "R30"
+      ]
+     },
+     {
+      "start": 189,
+      "end": 271,
+      "n_support": 4,
+      "reviews": [
+       "R12",
+       "R13",
+       "R28",
+       "R29"
+      ]
+     },
+     {
+      "start": 272,
+      "end": 463,
+      "n_support": 4,
+      "reviews": [
+       "R16",
+       "R18",
+       "R22",
+       "R29"
+      ]
+     },
+     {
+      "start": 464,
+      "end": 650,
+      "n_support": 3,
+      "reviews": [
+       "R12",
+       "R19",
+       "R21"
+      ]
+     },
+     {
+      "start": 464,
+      "end": 650,
+      "n_support": 1,
+      "reviews": [
+       "R19"
+      ]
+     },
+     {
+      "start": 651,
+      "end": 747,
+      "n_support": 11,
+      "reviews": [
+       "R01",
+       "R08",
+       "R12",
+       "R13",
+       "R19",
+       "R21",
+       "R23",
+       "R25",
+       "R26",
+       "R27",
+       "R30"
+      ]
+     }
+    ]
+   },
+   "agent": {
+    "text": "Customers had mixed experiences with the camera bag. Many praised its versatility, durability, and ample storage, noting it could hold cameras, lenses, laptops, and other gear comfortably. The top compartment is roomy and suitable for additional gear, reported by many reviewers. Some highlighted its comfort during long hikes and its ability to fit heavy loads. However, several users found the bag too large, heavy, and uncomfortable, especially for those with larger builds, as it could strain shoulders and make wearing it for long periods difficult. A few mentioned issues with accessibility to the camera compartment, difficulty fitting in overhead bins, and the lack of certain features like water bottle pockets or side access doors. Despite these drawbacks, many users recommended the bag for its functionality and build quality.",
+    "word_count": 128,
+    "claims": [
+     {
+      "start": 0,
+      "end": 52,
+      "n_support": 8,
+      "reviews": [
+       "R02",
+       "R12",
+       "R14",
+       "R18",
+       "R20",
+       "R21",
+       "R22",
+       "R28"
+      ]
+     },
+     {
+      "start": 53,
+      "end": 188,
+      "n_support": 3,
+      "reviews": [
+       "R04",
+       "R19",
+       "R30"
+      ]
+     },
+     {
+      "start": 189,
+      "end": 279,
+      "n_support": 8,
+      "reviews": [
+       "R04",
+       "R08",
+       "R12",
+       "R13",
+       "R18",
+       "R19",
+       "R20",
+       "R21"
+      ]
+     },
+     {
+      "start": 280,
+      "end": 362,
+      "n_support": 2,
+      "reviews": [
+       "R12",
+       "R23"
+      ]
+     },
+     {
+      "start": 363,
+      "end": 554,
+      "n_support": 4,
+      "reviews": [
+       "R16",
+       "R18",
+       "R22",
+       "R29"
+      ]
+     },
+     {
+      "start": 555,
+      "end": 741,
+      "n_support": 3,
+      "reviews": [
+       "R12",
+       "R19",
+       "R21"
+      ]
+     },
+     {
+      "start": 555,
+      "end": 741,
+      "n_support": 1,
+      "reviews": [
+       "R19"
+      ]
+     },
+     {
+      "start": 742,
+      "end": 838,
+      "n_support": 11,
+      "reviews": [
+       "R01",
+       "R08",
+       "R12",
+       "R13",
+       "R19",
+       "R21",
+       "R23",
+       "R25",
+       "R26",
+       "R27",
+       "R30"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "product_id": "B0006IIAQW",
+   "category": "Health_and_Household",
+   "n_reviews": 30,
+   "b0": {
+    "text": "Customers generally praise Metagenics Cal Apatite for its effectiveness in supporting bone health, with many noting improvements in bone density, recovery from fractures, and relief from muscle cramps. Several reviews highlight the product's quality, consistency, and recommended status by healthcare professionals. However, some customers expressed concerns about the large pill size, difficulty swallowing, and one instance of damaged packaging during shipping. A few reviews mentioned issues with pill integrity, such as broken or pulverized tablets. While most customers are satisfied and intend to repurchase, a few noted dissatisfaction with shipping or customer service.",
+    "word_count": 93,
+    "claims": [
+     {
+      "start": 0,
+      "end": 97,
+      "n_support": 3,
+      "reviews": [
+       "R08",
+       "R16",
+       "R19"
+      ]
+     },
+     {
+      "start": 99,
+      "end": 200,
+      "n_support": 1,
+      "reviews": [
+       "R19"
+      ]
+     },
+     {
+      "start": 99,
+      "end": 200,
+      "n_support": 2,
+      "reviews": [
+       "R08",
+       "R09"
+      ]
+     },
+     {
+      "start": 99,
+      "end": 200,
+      "n_support": 0,
+      "reviews": []
+     },
+     {
+      "start": 202,
+      "end": 314,
+      "n_support": 4,
+      "reviews": [
+       "R17",
+       "R21",
+       "R23",
+       "R30"
+      ]
+     },
+     {
+      "start": 202,
+      "end": 314,
+      "n_support": 3,
+      "reviews": [
+       "R03",
+       "R18",
+       "R19"
+      ]
+     },
+     {
+      "start": 202,
+      "end": 314,
+      "n_support": 2,
+      "reviews": [
+       "R19",
+       "R21"
+      ]
+     },
+     {
+      "start": 316,
+      "end": 462,
+      "n_support": 3,
+      "reviews": [
+       "R08",
+       "R19",
+       "R23"
+      ]
+     },
+     {
+      "start": 316,
+      "end": 462,
+      "n_support": 0,
+      "reviews": []
+     },
+     {
+      "start": 316,
+      "end": 462,
+      "n_support": 2,
+      "reviews": [
+       "R06",
+       "R11"
+      ]
+     },
+     {
+      "start": 464,
+      "end": 552,
+      "n_support": 2,
+      "reviews": [
+       "R06",
+       "R11"
+      ]
+     },
+     {
+      "start": 554,
+      "end": 613,
+      "n_support": 0,
+      "reviews": []
+     },
+     {
+      "start": 554,
+      "end": 613,
+      "n_support": 0,
+      "reviews": []
+     },
+     {
+      "start": 615,
+      "end": 676,
+      "n_support": 1,
+      "reviews": [
+       "R06"
+      ]
+     }
+    ]
+   },
+   "agent": {
+    "text": "Customers generally praise Metagenics Cal Apatite for supporting bone health, with several noting it effectively meets bone needs. The pills are rather big but are not a problem to swallow, as reported by a few reviewers. Several reviews highlight the product's quality, consistency, and recommendation by healthcare professionals. A few mentioned issues with pill integrity, such as broken or pulverized tablets. Most customers are satisfied and intend to repurchase, though a few noted dissatisfaction with shipping or customer service.",
+    "word_count": 79,
+    "claims": [
+     {
+      "start": 0,
+      "end": 76,
+      "n_support": 3,
+      "reviews": [
+       "R08",
+       "R16",
+       "R19"
+      ]
+     },
+     {
+      "start": 78,
+      "end": 129,
+      "n_support": 1,
+      "reviews": [
+       "R19"
+      ]
+     },
+     {
+      "start": 131,
+      "end": 220,
+      "n_support": 2,
+      "reviews": [
+       "R08",
+       "R19"
+      ]
+     },
+     {
+      "start": 222,
+      "end": 330,
+      "n_support": 2,
+      "reviews": [
+       "R03",
+       "R21"
+      ]
+     },
+     {
+      "start": 332,
+      "end": 412,
+      "n_support": 2,
+      "reviews": [
+       "R22",
+       "R25"
+      ]
+     },
+     {
+      "start": 414,
+      "end": 467,
+      "n_support": 3,
+      "reviews": [
+       "R02",
+       "R06",
+       "R08"
+      ]
+     },
+     {
+      "start": 469,
+      "end": 537,
+      "n_support": 1,
+      "reviews": [
+       "R06"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "product_id": "B000H6BLQO",
+   "category": "Health_and_Household",
+   "n_reviews": 30,
+   "b0": {
+    "text": "Customers generally praise the humidor for its good value, solid construction, and ability to maintain humidity, especially for the price. Many appreciate the attractive design, cedar lining, and capacity for holding a reasonable number of cigars. However, several reviews mention that the product does not include a hygrometer, which is essential for monitoring humidity levels, and some note that the included hygrometer is of poor quality or difficult to calibrate. A few users report issues with the humidifier or difficulty maintaining consistent humidity levels, despite following seasoning instructions. Overall, the product is seen as a reliable and affordable option for those with modest cigar collections.",
+    "word_count": 105,
+    "claims": [
+     {
+      "start": 0,
+      "end": 57,
+      "n_support": 19,
+      "reviews": [
+       "R01",
+       "R02",
+       "R03",
+       "R04",
+       "R06",
+       "R09",
+       "R11",
+       "R12",
+       "R14",
+       "R16",
+       "R17",
+       "R18",
+       "R19",
+       "R22",
+       "R24",
+       "R25",
+       "R26",
+       "R27",
+       "R28"
+      ]
+     },
+     {
+      "start": 59,
+      "end": 77,
+      "n_support": 6,
+      "reviews": [
+       "R01",
+       "R03",
+       "R04",
+       "R09",
+       "R22",
+       "R27"
+      ]
+     },
+     {
+      "start": 83,
+      "end": 111,
+      "n_support": 23,
+      "reviews": [
+       "R01",
+       "R02",
+       "R03",
+       "R05",
+       "R06",
+       "R07",
+       "R09",
+       "R10",
+       "R11",
+       "R12",
+       "R13",
+       "R14",
+       "R16",
+       "R17",
+       "R18",
+       "R19",
+       "R21",
+       "R22",
+       "R24",
+       "R25",
+       "R26",
+       "R29",
+       "R30"
+      ]
+     },
+     {
+      "start": 113,
+      "end": 137,
+      "n_support": 17,
+      "reviews": [
+       "R01",
+       "R03",
+       "R04",
+       "R06",
+       "R09",
+       "R11",
+       "R12",
+       "R14",
+       "R16",
+       "R17",
+       "R18",
+       "R19",
+       "R22",
+       "R24",
+       "R26",
+       "R27",
+       "R28"
+      ]
+     },
+     {
+      "start": 139,
+      "end": 176,
+      "n_support": 15,
+      "reviews": [
+       "R01",
+       "R03",
+       "R04",
+       "R05",
+       "R07",
+       "R08",
+       "R14",
+       "R16",
+       "R18",
+       "R19",
+       "R21",
+       "R22",
+       "R24",
+       "R26",
+       "R30"
+      ]
+     },
+     {
+      "start": 178,
+      "end": 190,
+      "n_support": 5,
+      "reviews": [
+       "R08",
+       "R19",
+       "R26",
+       "R28",
+       "R29"
+      ]
+     },
+     {
+      "start": 196,
+      "end": 246,
+      "n_support": 10,
+      "reviews": [
+       "R02",
+       "R04",
+       "R06",
+       "R09",
+       "R13",
+       "R17",
+       "R22",
+       "R24",
+       "R25",
+       "R29"
+      ]
+     },
+     {
+      "start": 290,
+      "end": 327,
+      "n_support": 6,
+      "reviews": [
+       "R01",
+       "R06",
+       "R07",
+       "R19",
+       "R20",
+       "R29"
+      ]
+     },
+     {
+      "start": 399,
+      "end": 467,
+      "n_support": 1,
+      "reviews": [
+       "R24"
+      ]
+     },
+     {
+      "start": 475,
+      "end": 567,
+      "n_support": 3,
+      "reviews": [
+       "R15",
+       "R16",
+       "R24"
+      ]
+     },
+     {
+      "start": 569,
+      "end": 609,
+      "n_support": 1,
+      "reviews": [
+       "R15"
+      ]
+     },
+     {
+      "start": 624,
+      "end": 675,
+      "n_support": 16,
+      "reviews": [
+       "R01",
+       "R03",
+       "R04",
+       "R06",
+       "R09",
+       "R11",
+       "R14",
+       "R16",
+       "R17",
+       "R19",
+       "R22",
+       "R24",
+       "R25",
+       "R26",
+       "R27",
+       "R28"
+      ]
+     },
+     {
+      "start": 676,
+      "end": 715,
+      "n_support": 12,
+      "reviews": [
+       "R02",
+       "R03",
+       "R05",
+       "R06",
+       "R13",
+       "R17",
+       "R18",
+       "R20",
+       "R22",
+       "R26",
+       "R28",
+       "R29"
+      ]
+     }
+    ]
+   },
+   "agent": {
+    "text": "Customers generally praise the humidor for its good value, solid construction, and ability to maintain humidity, especially for the price. Many appreciate the attractive design, cedar lining, and large capacity for holding cigars. However, several reviews mention that the product does not include a hygrometer, which is essential for monitoring humidity levels, and some note that the included hygrometer is of poor quality or difficult to calibrate. Many users are confident their process is correct but the product still fails to maintain humidity. A few users report issues with the humidifier or difficulty maintaining consistent humidity levels, despite following seasoning instructions. Overall, the product is seen as a reliable and affordable option for those with modest cigar collections.",
+    "word_count": 118,
+    "claims": [
+     {
+      "start": 0,
+      "end": 57,
+      "n_support": 19,
+      "reviews": [
+       "R01",
+       "R02",
+       "R03",
+       "R04",
+       "R06",
+       "R09",
+       "R11",
+       "R12",
+       "R14",
+       "R16",
+       "R17",
+       "R18",
+       "R19",
+       "R22",
+       "R24",
+       "R25",
+       "R26",
+       "R27",
+       "R28"
+      ]
+     },
+     {
+      "start": 59,
+      "end": 77,
+      "n_support": 5,
+      "reviews": [
+       "R01",
+       "R04",
+       "R09",
+       "R22",
+       "R27"
+      ]
+     },
+     {
+      "start": 83,
+      "end": 111,
+      "n_support": 23,
+      "reviews": [
+       "R01",
+       "R02",
+       "R03",
+       "R05",
+       "R06",
+       "R07",
+       "R09",
+       "R10",
+       "R11",
+       "R12",
+       "R13",
+       "R14",
+       "R16",
+       "R17",
+       "R18",
+       "R19",
+       "R21",
+       "R22",
+       "R24",
+       "R25",
+       "R26",
+       "R29",
+       "R30"
+      ]
+     },
+     {
+      "start": 113,
+      "end": 137,
+      "n_support": 17,
+      "reviews": [
+       "R01",
+       "R03",
+       "R04",
+       "R06",
+       "R09",
+       "R11",
+       "R12",
+       "R14",
+       "R16",
+       "R17",
+       "R18",
+       "R19",
+       "R22",
+       "R24",
+       "R26",
+       "R27",
+       "R28"
+      ]
+     },
+     {
+      "start": 139,
+      "end": 176,
+      "n_support": 15,
+      "reviews": [
+       "R01",
+       "R03",
+       "R04",
+       "R05",
+       "R07",
+       "R08",
+       "R14",
+       "R16",
+       "R18",
+       "R19",
+       "R21",
+       "R22",
+       "R24",
+       "R26",
+       "R30"
+      ]
+     },
+     {
+      "start": 178,
+      "end": 190,
+      "n_support": 5,
+      "reviews": [
+       "R08",
+       "R19",
+       "R26",
+       "R28",
+       "R29"
+      ]
+     },
+     {
+      "start": 196,
+      "end": 229,
+      "n_support": 9,
+      "reviews": [
+       "R02",
+       "R03",
+       "R04",
+       "R12",
+       "R13",
+       "R22",
+       "R24",
+       "R25",
+       "R29"
+      ]
+     },
+     {
+      "start": 273,
+      "end": 310,
+      "n_support": 6,
+      "reviews": [
+       "R01",
+       "R06",
+       "R07",
+       "R19",
+       "R20",
+       "R29"
+      ]
+     },
+     {
+      "start": 382,
+      "end": 450,
+      "n_support": 1,
+      "reviews": [
+       "R24"
+      ]
+     },
+     {
+      "start": 452,
+      "end": 550,
+      "n_support": 5,
+      "reviews": [
+       "R06",
+       "R08",
+       "R11",
+       "R15",
+       "R30"
+      ]
+     },
+     {
+      "start": 552,
+      "end": 650,
+      "n_support": 8,
+      "reviews": [
+       "R06",
+       "R08",
+       "R11",
+       "R13",
+       "R15",
+       "R16",
+       "R24",
+       "R30"
+      ]
+     },
+     {
+      "start": 652,
+      "end": 692,
+      "n_support": 2,
+      "reviews": [
+       "R11",
+       "R15"
+      ]
+     },
+     {
+      "start": 694,
+      "end": 798,
+      "n_support": 16,
+      "reviews": [
+       "R01",
+       "R02",
+       "R03",
+       "R04",
+       "R06",
+       "R09",
+       "R11",
+       "R17",
+       "R18",
+       "R19",
+       "R22",
+       "R24",
+       "R25",
+       "R26",
+       "R27",
+       "R28"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "product_id": "B00006LU8Q",
+   "category": "Toys_and_Games",
+   "n_reviews": 30,
+   "b0": {
+    "text": "The reviews for the Princess of South Africa Barbie reflect a mix of admiration and criticism. Many praise the doll’s beauty, especially her dark skin and Afro-centric features, seeing her as a positive representation of African heritage and a standout in collections. Some reviewers appreciate the detailed costumes and the doll’s regal appearance, noting her as a symbol of pride and cultural representation. However, a few mention issues with the doll’s quality, such as cheap fabrics, difficulty in restyling her hair, and the inability to remove certain accessories. A few also point out her flat feet and the unrealistic appearance of her skin and eyes. While some find her dark skin unattractive, others argue that it is a realistic and beautiful feature, highlighting the doll’s significance in challenging beauty standards. Overall, the reviews show strong support for the doll’s cultural representation and design, alongside some concerns about craftsmanship and realism.",
+    "word_count": 150,
+    "claims": [
+     {
+      "start": 0,
+      "end": 94,
+      "n_support": 12,
+      "reviews": [
+       "R01",
+       "R03",
+       "R04",
+       "R05",
+       "R07",
+       "R11",
+       "R12",
+       "R14",
+       "R15",
+       "R17",
+       "R20",
+       "R22"
+      ]
+     },
+     {
+      "start": 95,
+      "end": 268,
+      "n_support": 4,
+      "reviews": [
+       "R02",
+       "R07",
+       "R14",
+       "R15"
+      ]
+     },
+     {
+      "start": 269,
+      "end": 410,
+      "n_support": 3,
+      "reviews": [
+       "R05",
+       "R07",
+       "R15"
+      ]
+     },
+     {
+      "start": 411,
+      "end": 571,
+      "n_support": 2,
+      "reviews": [
+       "R01",
+       "R17"
+      ]
+     },
+     {
+      "start": 572,
+      "end": 659,
+      "n_support": 1,
+      "reviews": [
+       "R05"
+      ]
+     },
+     {
+      "start": 660,
+      "end": 832,
+      "n_support": 6,
+      "reviews": [
+       "R01",
+       "R03",
+       "R07",
+       "R14",
+       "R15",
+       "R17"
+      ]
+     },
+     {
+      "start": 833,
+      "end": 981,
+      "n_support": 5,
+      "reviews": [
+       "R07",
+       "R14",
+       "R15",
+       "R20",
+       "R21"
+      ]
+     },
+     {
+      "start": 833,
+      "end": 981,
+      "n_support": 4,
+      "reviews": [
+       "R01",
+       "R13",
+       "R15",
+       "R17"
+      ]
+     },
+     {
+      "start": 833,
+      "end": 981,
+      "n_support": 5,
+      "reviews": [
+       "R01",
+       "R05",
+       "R13",
+       "R15",
+       "R17"
+      ]
+     }
+    ]
+   },
+   "agent": {
+    "text": "The reviews for the Princess of South Africa Barbie reflect a mix of admiration and criticism. Many praise the doll’s beauty, especially her dark skin and Afro-centric features, seeing her as a positive representation of African heritage and a standout in collections. Some reviewers appreciate the detailed costumes and the doll’s regal appearance, noting her as a symbol of pride and cultural representation. However, a few mention issues with the doll’s quality, such as cheap fabrics, difficulty in restyling her hair, and the inability to remove certain accessories. A few also point out her flat feet and the unrealistic appearance of her skin and eyes. While some find her dark skin unattractive, others argue that it is a realistic and beautiful feature, highlighting the doll’s significance in challenging beauty standards. Overall, the reviews show strong support for the doll’s cultural representation and design, alongside some concerns about craftsmanship and realism.",
+    "word_count": 150,
+    "claims": [
+     {
+      "start": 0,
+      "end": 94,
+      "n_support": 12,
+      "reviews": [
+       "R01",
+       "R03",
+       "R04",
+       "R05",
+       "R07",
+       "R11",
+       "R12",
+       "R14",
+       "R15",
+       "R17",
+       "R20",
+       "R22"
+      ]
+     },
+     {
+      "start": 95,
+      "end": 268,
+      "n_support": 4,
+      "reviews": [
+       "R02",
+       "R07",
+       "R14",
+       "R15"
+      ]
+     },
+     {
+      "start": 269,
+      "end": 410,
+      "n_support": 3,
+      "reviews": [
+       "R05",
+       "R07",
+       "R15"
+      ]
+     },
+     {
+      "start": 411,
+      "end": 571,
+      "n_support": 2,
+      "reviews": [
+       "R01",
+       "R17"
+      ]
+     },
+     {
+      "start": 572,
+      "end": 659,
+      "n_support": 1,
+      "reviews": [
+       "R05"
+      ]
+     },
+     {
+      "start": 660,
+      "end": 832,
+      "n_support": 4,
+      "reviews": [
+       "R03",
+       "R14",
+       "R15",
+       "R17"
+      ]
+     },
+     {
+      "start": 833,
+      "end": 981,
+      "n_support": 6,
+      "reviews": [
+       "R01",
+       "R07",
+       "R11",
+       "R14",
+       "R15",
+       "R20"
+      ]
+     },
+     {
+      "start": 833,
+      "end": 981,
+      "n_support": 1,
+      "reviews": [
+       "R15"
+      ]
+     },
+     {
+      "start": 833,
+      "end": 981,
+      "n_support": 5,
+      "reviews": [
+       "R01",
+       "R05",
+       "R13",
+       "R15",
+       "R17"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "product_id": "B00021H91U",
+   "category": "Toys_and_Games",
+   "n_reviews": 30,
+   "b0": {
+    "text": "Customers enjoyed the nostalgic and vintage design of the card sets, with many appreciating the retro graphics and classic images that brought back childhood memories. The cards were praised for being suitable for children, with bright colors and small sizes ideal for little hands. Several users mentioned that their grandchildren loved the games, and some appreciated the variety of card games included. However, some found the cards slightly flimsy or the instructions hard to follow. A few reviewers noted that the games, like Rummy and Old Maid, were more challenging with these cards compared to standard decks. One customer was disappointed when they received a different deck than expected. Overall, the product was generally well-received, with many satisfied with the quality and fun factor for family game nights.",
+    "word_count": 128,
+    "claims": [
+     {
+      "start": 0,
+      "end": 67,
+      "n_support": 7,
+      "reviews": [
+       "R02",
+       "R04",
+       "R07",
+       "R08",
+       "R13",
+       "R25",
+       "R30"
+      ]
+     },
+     {
+      "start": 69,
+      "end": 166,
+      "n_support": 2,
+      "reviews": [
+       "R04",
+       "R13"
+      ]
+     },
+     {
+      "start": 168,
+      "end": 222,
+      "n_support": 8,
+      "reviews": [
+       "R07",
+       "R12",
+       "R19",
+       "R22",
+       "R23",
+       "R25",
+       "R27",
+       "R29"
+      ]
+     },
+     {
+      "start": 224,
+      "end": 281,
+      "n_support": 2,
+      "reviews": [
+       "R07",
+       "R22"
+      ]
+     },
+     {
+      "start": 283,
+      "end": 347,
+      "n_support": 5,
+      "reviews": [
+       "R05",
+       "R08",
+       "R19",
+       "R22",
+       "R24"
+      ]
+     },
+     {
+      "start": 349,
+      "end": 404,
+      "n_support": 8,
+      "reviews": [
+       "R04",
+       "R13",
+       "R22",
+       "R23",
+       "R26",
+       "R27",
+       "R29",
+       "R30"
+      ]
+     },
+     {
+      "start": 406,
+      "end": 486,
+      "n_support": 2,
+      "reviews": [
+       "R07",
+       "R23"
+      ]
+     },
+     {
+      "start": 452,
+      "end": 486,
+      "n_support": 1,
+      "reviews": [
+       "R07"
+      ]
+     },
+     {
+      "start": 488,
+      "end": 616,
+      "n_support": 1,
+      "reviews": [
+       "R02"
+      ]
+     },
+     {
+      "start": 618,
+      "end": 697,
+      "n_support": 1,
+      "reviews": [
+       "R03"
+      ]
+     },
+     {
+      "start": 699,
+      "end": 747,
+      "n_support": 9,
+      "reviews": [
+       "R06",
+       "R08",
+       "R15",
+       "R16",
+       "R20",
+       "R21",
+       "R22",
+       "R24",
+       "R28"
+      ]
+     },
+     {
+      "start": 749,
+      "end": 823,
+      "n_support": 8,
+      "reviews": [
+       "R04",
+       "R12",
+       "R13",
+       "R19",
+       "R20",
+       "R22",
+       "R24",
+       "R27"
+      ]
+     }
+    ]
+   },
+   "agent": {
+    "text": "Customers enjoyed the nostalgic and vintage design of the card sets, with many appreciating the retro graphics and classic images that brought back childhood memories. The cards were praised for being suitable for children, with bright colors and small sizes ideal for little hands. Several users mentioned that their grandchildren loved the games, and some appreciated the variety of card games included. However, some found the cards slightly flimsy or the instructions hard to follow. A few reviewers noted that the games, like Rummy and Old Maid, were more challenging with these cards compared to standard decks. One customer was disappointed when they received a different deck than expected. Overall, the product was generally well-received, with many satisfied with the quality and fun factor for family game nights.",
+    "word_count": 128,
+    "claims": [
+     {
+      "start": 0,
+      "end": 67,
+      "n_support": 7,
+      "reviews": [
+       "R02",
+       "R04",
+       "R07",
+       "R08",
+       "R13",
+       "R25",
+       "R30"
+      ]
+     },
+     {
+      "start": 69,
+      "end": 166,
+      "n_support": 2,
+      "reviews": [
+       "R04",
+       "R13"
+      ]
+     },
+     {
+      "start": 168,
+      "end": 222,
+      "n_support": 8,
+      "reviews": [
+       "R07",
+       "R12",
+       "R19",
+       "R22",
+       "R23",
+       "R25",
+       "R27",
+       "R29"
+      ]
+     },
+     {
+      "start": 224,
+      "end": 281,
+      "n_support": 2,
+      "reviews": [
+       "R07",
+       "R22"
+      ]
+     },
+     {
+      "start": 283,
+      "end": 347,
+      "n_support": 4,
+      "reviews": [
+       "R08",
+       "R19",
+       "R22",
+       "R24"
+      ]
+     },
+     {
+      "start": 349,
+      "end": 404,
+      "n_support": 8,
+      "reviews": [
+       "R04",
+       "R13",
+       "R22",
+       "R23",
+       "R26",
+       "R27",
+       "R29",
+       "R30"
+      ]
+     },
+     {
+      "start": 406,
+      "end": 486,
+      "n_support": 2,
+      "reviews": [
+       "R07",
+       "R23"
+      ]
+     },
+     {
+      "start": 452,
+      "end": 486,
+      "n_support": 1,
+      "reviews": [
+       "R07"
+      ]
+     },
+     {
+      "start": 488,
+      "end": 616,
+      "n_support": 1,
+      "reviews": [
+       "R02"
+      ]
+     },
+     {
+      "start": 618,
+      "end": 697,
+      "n_support": 1,
+      "reviews": [
+       "R03"
+      ]
+     },
+     {
+      "start": 699,
+      "end": 747,
+      "n_support": 9,
+      "reviews": [
+       "R06",
+       "R08",
+       "R15",
+       "R16",
+       "R20",
+       "R21",
+       "R22",
+       "R24",
+       "R28"
+      ]
+     },
+     {
+      "start": 749,
+      "end": 823,
+      "n_support": 8,
+      "reviews": [
+       "R04",
+       "R12",
+       "R13",
+       "R19",
+       "R20",
+       "R22",
+       "R24",
+       "R27"
+      ]
+     }
+    ]
+   }
+  }
+ ]
+}
