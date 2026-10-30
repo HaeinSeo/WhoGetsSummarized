@@ -2,7 +2,7 @@ name: Deploy demo to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [demo/evidence-highlight]
     paths: ["demo/**", ".github/workflows/pages.yml"]
   workflow_dispatch:
 
