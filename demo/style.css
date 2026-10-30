@@ -153,3 +153,15 @@ footer { color: var(--muted); font-size: 0.8rem; padding: 34px 0 48px; text-alig
 }
 
 .photo.drag { border-color: var(--accent); background: #ece8ff; }
+.local-card h3 { margin: 0 0 6px; font-size: 1.05rem; }
+.local-card textarea {
+  width: 100%; margin-top: 8px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line);
+  background: #fff; font: inherit; font-size: 0.92rem; resize: vertical;
+}
+.local-row { display: flex; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+.local-row .btn-ghost { padding: 9px 16px; font-weight: 600; cursor: pointer; }
+.backend { color: var(--muted); font-size: 0.85rem; }
+.backend.ok { color: #0f6b3a; }
+.backend.off { color: #9b1c33; }
+
+[hidden] { display: none !important; }

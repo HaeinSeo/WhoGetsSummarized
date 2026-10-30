@@ -24,6 +24,7 @@ dependencies = [
 ml = ["torch>=2.2", "transformers>=4.44", "sentencepiece", "protobuf"]
 eda = ["matplotlib>=3.8", "psutil>=5.9"]
 dev = ["pytest>=8"]
+serve = ["fastapi>=0.110", "uvicorn>=0.29"]
 
 [project.scripts]
 wgs = "wgs.cli:main"
@@ -32,7 +33,7 @@ wgs = "wgs.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-wgs = ["prompts/*.txt"]
+wgs = ["prompts/*.txt", "release_files/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

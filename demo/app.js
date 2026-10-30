@@ -109,6 +109,15 @@ const I18N = {
   },
 };
 
+// Local analysis of pasted reviews (needs the backend: python -m uvicorn wgs.serve:app --port 8000).
+const BACKEND = "http://127.0.0.1:8000";
+const LOCAL = {
+  en: { title: "Analyze your own reviews", hint: "Paste 3+ reviews, one per line. Runs on your computer; nothing is uploaded.", go: "Analyze pasted reviews", ph: "Great product, works every day.\n\nBroke after two weeks...", on: "Local backend connected", off: "Local backend not running", running: "Analyzing on your computer (about a minute)...", few: "Paste at least 3 reviews (20+ characters each).", fail: "Analysis failed", heading: "Your reviews", sub: (m, j) => `Local run · ${m} · judge: NLI (English, not validated for this input)` },
+  ko: { title: "내 리뷰 직접 분석", hint: "리뷰를 한 줄에 하나씩 3개 이상 붙여넣으세요. 내 컴퓨터에서 실행되며 아무것도 업로드되지 않습니다.", go: "붙여넣은 리뷰 분석", ph: "정말 좋아요, 매일 잘 써요.\n\n2주 만에 망가졌어요...", on: "로컬 백엔드 연결됨", off: "로컬 백엔드가 꺼져 있음", running: "내 컴퓨터에서 분석 중 (약 1분)...", few: "20자 이상 리뷰를 3개 이상 붙여넣으세요.", fail: "분석 실패", heading: "내 리뷰", sub: (m, j) => `로컬 실행 · ${m} · 판정기: NLI (영어 기준, 이 입력에 대해 미검증)` },
+  ja: { title: "自分のレビューを分析", hint: "レビューを1行に1件、3件以上貼り付けてください。お使いのPCで実行され、何もアップロードされません。", go: "貼り付けたレビューを分析", ph: "とても良い商品です。毎日使っています。\n\n2週間で壊れました...", on: "ローカルバックエンド接続中", off: "ローカルバックエンドが停止中", running: "お使いのPCで分析中（約1分）...", few: "20文字以上のレビューを3件以上貼り付けてください。", fail: "分析に失敗しました", heading: "あなたのレビュー", sub: (m, j) => `ローカル実行 · ${m} · 判定器: NLI（英語基準、この入力では未検証）` },
+  zh: { title: "分析你自己的评论", hint: "每行粘贴一条评论，至少 3 条。在你的电脑上运行，不会上传任何内容。", go: "分析粘贴的评论", ph: "非常好用，每天都在用。\n\n两周后就坏了……", on: "本地后端已连接", off: "本地后端未运行", running: "正在你的电脑上分析（约一分钟）...", few: "请至少粘贴 3 条（每条 20 字以上）。", fail: "分析失败", heading: "你的评论", sub: (m, j) => `本地运行 · ${m} · 判定器：NLI（英文基准，未针对此输入验证）` },
+};
+
 let lang = "en";
 let data = null;
 let current = null;
@@ -135,6 +144,12 @@ function applyLang() {
   $("t-footer").textContent = s.footer;
   $("photo-url").placeholder = s.photoUrl;
   $("t-pick").textContent = s.choose;
+  const L = LOCAL[lang];
+  $("t-local-title").textContent = L.title;
+  $("t-local-hint").textContent = L.hint;
+  $("t-local-go").textContent = L.go;
+  $("reviews-in").placeholder = L.ph;
+  checkBackend();
   $("photo-empty").textContent = s.photoEmpty;
   if (current) render();
 }
@@ -218,8 +233,16 @@ function render() {
   });
 
   $("stats").textContent = s.stats({ claims: r.claims.length, words: r.word_count });
-  $("meta").textContent = s.meta(p);
-  $("product-title").textContent = `ASIN ${p.product_id}`;
+  if (p.local) {
+    const L = LOCAL[lang];
+    $("meta").textContent = L.sub(p.b0.model, p.b0.judge);
+    $("product-title").textContent = L.heading;
+    document.querySelector(".seg").hidden = true;
+  } else {
+    $("meta").textContent = s.meta(p);
+    $("product-title").textContent = `ASIN ${p.product_id}`;
+    document.querySelector(".seg").hidden = false;
+  }
   renderBars(r);
   document.querySelectorAll(".seg button").forEach((b) => b.classList.toggle("on", b.dataset.view === view));
 }
@@ -265,6 +288,48 @@ function fromFile(file) {
   setPhoto(URL.createObjectURL(file));
 }
 
+async function checkBackend() {
+  const el = $("backend");
+  if (!el) return;
+  try {
+    const r = await fetch(`${BACKEND}/health`, { cache: "no-store" });
+    const ok = r.ok;
+    el.textContent = ok ? LOCAL[lang].on : LOCAL[lang].off;
+    el.className = `backend ${ok ? "ok" : "off"}`;
+  } catch {
+    el.textContent = LOCAL[lang].off;
+    el.className = "backend off";
+  }
+}
+
+async function analyzeLocal() {
+  const L = LOCAL[lang];
+  const text = $("reviews-in").value;
+  const n = text.split(/\n\s*\n|\n/).filter((x) => x.trim().length >= 20).length;
+  if (n < 3) { $("status").textContent = L.few; return; }
+  $("status").textContent = L.running;
+  $("local-card").classList.add("busy");
+  try {
+    const r = await fetch(`${BACKEND}/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reviews_text: text, category: "product" }),
+    });
+    const body = await r.json();
+    if (!r.ok) throw new Error(body.detail || r.statusText);
+    current = { product_id: "LOCAL", category: "product", n_reviews: body.n_reviews, local: true, b0: body, agent: body };
+    view = "b0";
+    $("status").textContent = "";
+    $("result").hidden = false;
+    render();
+    $("result").scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (e) {
+    $("status").textContent = `${L.fail}: ${e.message}`;
+  } finally {
+    $("local-card").classList.remove("busy");
+  }
+}
+
 function initChips() {
   const box = $("chips");
   box.textContent = "";
@@ -295,6 +360,8 @@ document.addEventListener("DOMContentLoaded", () => {
     view = b.dataset.view;
     if (current) render();
   }));
+
+  $("t-local-go").addEventListener("click", analyzeLocal);
 
   // photo slot
   $("photo-file").addEventListener("change", (e) => fromFile(e.target.files[0]));
