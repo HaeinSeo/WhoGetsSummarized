@@ -1,90 +1,111 @@
 // Static demo: renders precomputed evidence highlights (no review text, no live crawling).
 // Data: data/products.json, produced by scripts/build_demo_data.py.
+// Product photos are never fetched from Amazon: the visitor supplies their own image (file, paste, drop, or image URL).
 
 const I18N = {
   en: {
     title: "Who Gets Summarized?",
-    intro: "Paste an Amazon product link. The demo shows which claims in a review summary are backed by reviews, and how many reviewers back each one.",
-    go: "Show",
-    hint: "Examples: amazon.com/dp/B000OFL8QG or a bare ASIN. Or pick a sample below.",
+    intro: "Paste an Amazon link. I'll check every claim in the summary against the reviews and show how many reviewers back it up.",
+    go: "Analyze",
+    hint: "e.g. amazon.com/dp/B000OFL8QG, or just the ASIN. Or try a sample:",
     placeholder: "Amazon product link or ASIN",
-    sample: "Sample products",
     viewAgent: "Evidence agent v2",
     viewB0: "Direct summary (B0)",
-    multi: "2+ reviews support it",
+    multi: "2+ reviewers",
     single: "1 reviewer only",
-    none: "no review supports it",
+    none: "no support",
+    photoEmpty: "Add your product photo: choose a file, drop it here, or paste an image (Ctrl+V).",
+    photoUrl: "or paste an image link",
+    choose: "Choose photo",
+    clear: "Remove",
+    bars: { multi: "Backed by 2+ reviewers", single: "Single reviewer", none: "No supporting review" },
+    claims: "claims",
     meta: (p) => `${p.category.replace(/_/g, " ")} · ${p.n_reviews} reviews`,
-    stats: (s) => `${s.claims} claims · ${s.multi} multi-reviewer · ${s.single} single-reviewer · ${s.none} unsupported · ${s.words} words`,
+    stats: (s) => `${s.claims} claims · ${s.words} words · hover a highlight to see which reviewers back it`,
     support: (k, n) => `Supported by ${k} of ${n} reviews`,
     none_support: "No supporting review found",
-    note: "Support is decided by an NLI judge over all reviews of the product, not by humans. Human labels for part of the data are reported in the paper, and they show that single-reviewer experiences are mentioned and stated faithfully less often than multi-reviewer ones. Summaries are in English; the interface is translated only.",
-    notInDemo: "This product is not in the public demo set. The public demo shows precomputed results only. Live analysis needs the local pipeline (see the repository README).",
-    badInput: "Could not find an ASIN in that input.",
-    footer: "Research demo for the WWW short paper (anonymised for review). Review text is not included. Reviewer IDs are anonymised per product.",
+    note: "Support is decided by an NLI judge over all reviews of the product, not by humans. The paper reports human labels for part of the data: single-reviewer experiences are mentioned and stated faithfully less often than multi-reviewer ones. Summaries are in English; only the interface is translated.",
+    notInDemo: "This product isn't in the public demo set, which shows precomputed results only. Live analysis needs the local pipeline (see the repository README).",
+    badInput: "Couldn't find an ASIN in that input.",
+    footer: "Research demo for a WWW short paper. No review text is included; reviewer IDs are anonymised per product.",
   },
   ko: {
     title: "누가 요약되는가?",
-    intro: "아마존 상품 링크를 붙여넣으면, 리뷰 요약의 각 주장이 리뷰로 뒷받침되는지, 그리고 몇 명의 리뷰어가 뒷받침하는지 보여줍니다.",
-    go: "보기",
-    hint: "예: amazon.com/dp/B000OFL8QG 또는 ASIN만 입력. 아래 샘플을 선택할 수도 있습니다.",
+    intro: "아마존 링크를 붙여넣으면, 요약의 각 주장이 리뷰로 뒷받침되는지, 몇 명의 리뷰어가 뒷받침하는지 보여드릴게요.",
+    go: "분석",
+    hint: "예: amazon.com/dp/B000OFL8QG 또는 ASIN만. 샘플도 써볼 수 있어요:",
     placeholder: "아마존 상품 링크 또는 ASIN",
-    sample: "샘플 상품",
     viewAgent: "근거 에이전트 v2",
     viewB0: "직접 요약 (B0)",
-    multi: "리뷰 2명 이상이 뒷받침",
+    multi: "리뷰어 2명 이상",
     single: "한 명의 리뷰어만",
-    none: "뒷받침하는 리뷰 없음",
+    none: "뒷받침 없음",
+    photoEmpty: "상품 사진을 넣어 주세요. 파일 선택, 여기에 끌어다 놓기, 또는 이미지 붙여넣기(Ctrl+V).",
+    photoUrl: "또는 이미지 링크 붙여넣기",
+    choose: "사진 선택",
+    clear: "지우기",
+    bars: { multi: "리뷰어 2명 이상이 뒷받침", single: "한 명의 리뷰어만", none: "뒷받침하는 리뷰 없음" },
+    claims: "주장",
     meta: (p) => `${p.category.replace(/_/g, " ")} · 리뷰 ${p.n_reviews}개`,
-    stats: (s) => `주장 ${s.claims}개 · 다수 리뷰어 ${s.multi} · 단일 리뷰어 ${s.single} · 근거 없음 ${s.none} · ${s.words}단어`,
+    stats: (s) => `주장 ${s.claims}개 · ${s.words}단어 · 형광펜 위에 마우스를 올리면 뒷받침 리뷰어를 볼 수 있어요`,
     support: (k, n) => `전체 ${n}개 리뷰 중 ${k}개가 뒷받침`,
     none_support: "뒷받침하는 리뷰를 찾지 못함",
     note: "근거 판정은 상품의 모든 리뷰에 대한 NLI 판정기가 내린 것이며, 사람이 내린 것이 아닙니다. 논문은 일부 데이터의 사람 라벨을 보고하며, 단일 리뷰어 경험이 다수 리뷰어 경험보다 덜 언급되고 덜 충실하게 서술됨을 보여줍니다. 요약문은 영어이고, 인터페이스만 번역되어 있습니다.",
     notInDemo: "이 상품은 공개 데모 데이터에 없습니다. 공개 데모는 미리 계산된 결과만 보여줍니다. 실시간 분석은 로컬 파이프라인이 필요합니다(저장소 README 참고).",
     badInput: "입력에서 ASIN을 찾지 못했습니다.",
-    footer: "WWW 단편 논문의 연구 데모(심사용 익명 처리). 리뷰 원문은 포함하지 않으며, 리뷰어 ID는 상품별로 익명 처리되었습니다.",
+    footer: "WWW 단편 논문의 연구 데모. 리뷰 원문은 포함하지 않으며, 리뷰어 ID는 상품별로 익명 처리되었습니다.",
   },
   ja: {
     title: "誰の意見が要約されるのか？",
-    intro: "Amazon商品のリンクを貼り付けると、レビュー要約の各主張がレビューに裏付けられているか、何人のレビュアーが裏付けているかを表示します。",
-    go: "表示",
-    hint: "例: amazon.co.jp/dp/B000OFL8QG やASINのみ。下のサンプルを選ぶこともできます。",
+    intro: "Amazonのリンクを貼り付けてください。要約の各主張がレビューに裏付けられているか、何人のレビュアーが支持しているかを表示します。",
+    go: "分析",
+    hint: "例: amazon.co.jp/dp/B000OFL8QG またはASINのみ。サンプルも試せます:",
     placeholder: "Amazon商品リンクまたはASIN",
-    sample: "サンプル商品",
     viewAgent: "根拠エージェント v2",
     viewB0: "直接要約 (B0)",
-    multi: "2名以上のレビューが裏付け",
+    multi: "レビュアー2名以上",
     single: "レビュアー1名のみ",
-    none: "裏付けるレビューなし",
+    none: "裏付けなし",
+    photoEmpty: "商品写真を追加してください。ファイル選択、ここにドロップ、または画像を貼り付け(Ctrl+V)。",
+    photoUrl: "または画像リンクを貼り付け",
+    choose: "写真を選択",
+    clear: "削除",
+    bars: { multi: "2名以上のレビューが裏付け", single: "レビュアー1名のみ", none: "裏付けるレビューなし" },
+    claims: "件",
     meta: (p) => `${p.category.replace(/_/g, " ")} · レビュー ${p.n_reviews}件`,
-    stats: (s) => `主張 ${s.claims}件 · 複数レビュアー ${s.multi} · 単一レビュアー ${s.single} · 根拠なし ${s.none} · ${s.words}語`,
+    stats: (s) => `主張 ${s.claims}件 · ${s.words}語 · ハイライトにマウスを乗せると裏付けレビュアーを表示`,
     support: (k, n) => `全 ${n} 件のレビューのうち ${k} 件が裏付け`,
     none_support: "裏付けるレビューが見つからない",
     note: "根拠の判定は、商品のすべてのレビューに対するNLI判定器によるもので、人手によるものではありません。論文では一部データの人手ラベルを報告しており、単一レビュアーの経験は複数レビュアーの経験より言及・忠実な記述が少ないことを示しています。要約文は英語のままで、画面表示のみ翻訳しています。",
     notInDemo: "この商品は公開デモのデータに含まれていません。公開デモは事前に計算された結果のみ表示します。リアルタイム分析にはローカルのパイプラインが必要です（リポジトリのREADMEを参照）。",
     badInput: "入力からASINを見つけられませんでした。",
-    footer: "WWW短編論文の研究デモ（査読用に匿名化）。レビュー本文は含まれず、レビュアーIDは商品ごとに匿名化されています。",
+    footer: "WWW短編論文の研究デモ。レビュー本文は含まれず、レビュアーIDは商品ごとに匿名化されています。",
   },
   zh: {
     title: "谁的观点会被总结？",
-    intro: "粘贴亚马逊商品链接，即可查看评论摘要中的每条论断是否有评论支持，以及有多少位评论者支持它。",
-    go: "查看",
-    hint: "例如：amazon.com/dp/B000OFL8QG 或直接输入 ASIN。也可以选择下方的示例商品。",
+    intro: "粘贴亚马逊链接，我会逐条核对摘要中的论断，并显示有多少位评论者支持它。",
+    go: "分析",
+    hint: "例如：amazon.com/dp/B000OFL8QG 或直接输入 ASIN。也可以试试示例：",
     placeholder: "亚马逊商品链接或 ASIN",
-    sample: "示例商品",
     viewAgent: "证据代理 v2",
     viewB0: "直接摘要 (B0)",
-    multi: "2 位及以上评论者支持",
+    multi: "2 位及以上评论者",
     single: "仅 1 位评论者",
-    none: "没有评论支持",
+    none: "无支持",
+    photoEmpty: "请添加商品照片：选择文件、拖到这里，或粘贴图片（Ctrl+V）。",
+    photoUrl: "或粘贴图片链接",
+    choose: "选择照片",
+    clear: "移除",
+    bars: { multi: "2 位及以上评论者支持", single: "仅 1 位评论者", none: "没有评论支持" },
+    claims: "条",
     meta: (p) => `${p.category.replace(/_/g, " ")} · ${p.n_reviews} 条评论`,
-    stats: (s) => `论断 ${s.claims} 条 · 多人支持 ${s.multi} · 单人支持 ${s.single} · 无支持 ${s.none} · ${s.words} 词`,
+    stats: (s) => `论断 ${s.claims} 条 · ${s.words} 词 · 将鼠标移到高亮上可查看支持的评论者`,
     support: (k, n) => `${n} 条评论中有 ${k} 条支持`,
     none_support: "未找到支持的评论",
     note: "支持与否由 NLI 判定器基于该商品的全部评论做出，并非人工判断。论文报告了部分数据的人工标注，显示单人经验被提及和忠实陈述的频率低于多人经验。摘要为英文，界面已翻译。",
     notInDemo: "该商品不在公开演示数据中。公开演示仅显示预先计算的结果。实时分析需要本地流程（参见仓库 README）。",
     badInput: "无法从输入中找到 ASIN。",
-    footer: "WWW 短文论文的研究演示（为匿名评审而处理）。不包含评论原文，评论者 ID 已按商品匿名化。",
+    footer: "WWW 短文论文的研究演示。不包含评论原文，评论者 ID 已按商品匿名化。",
   },
 };
 
@@ -92,6 +113,7 @@ let lang = "en";
 let data = null;
 let current = null;
 let view = "agent";
+let photoUrl = null; // object URL of the visitor's own photo, kept in memory only
 
 const $ = (id) => document.getElementById(id);
 const t = () => I18N[lang];
@@ -111,6 +133,9 @@ function applyLang() {
   $("t-leg-none").textContent = s.none;
   $("t-note").textContent = s.note;
   $("t-footer").textContent = s.footer;
+  $("photo-url").placeholder = s.photoUrl;
+  $("t-pick").textContent = s.choose;
+  $("photo-empty").textContent = s.photoEmpty;
   if (current) render();
 }
 
@@ -147,6 +172,33 @@ function classOf(c) {
   return "multi";
 }
 
+function renderBars(r) {
+  const s = t();
+  const n = r.claims.length || 1;
+  const kinds = ["multi", "single", "none"];
+  const box = $("bars");
+  box.textContent = "";
+  kinds.forEach((k) => {
+    const cnt = r.claims.filter((c) => classOf(c) === k).length;
+    const pct = Math.round((100 * cnt) / n);
+    const row = document.createElement("div");
+    row.className = "bar-row";
+    const label = document.createElement("span");
+    label.textContent = s.bars[k];
+    const num = document.createElement("span");
+    num.className = "bar-num";
+    num.textContent = `${cnt} · ${pct}%`;
+    const track = document.createElement("div");
+    track.className = "bar-track";
+    const fill = document.createElement("div");
+    fill.className = `bar-fill ${k}`;
+    track.appendChild(fill);
+    row.append(label, num, track);
+    box.appendChild(row);
+    requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.width = `${pct}%`; }));
+  });
+}
+
 function render() {
   const s = t();
   const p = current;
@@ -159,18 +211,16 @@ function render() {
     const mk = document.createElement("mark");
     mk.className = cls;
     mk.textContent = seg.text;
-    const sup = seg.claim.n_support === 0
+    mk.title = seg.claim.n_support === 0
       ? s.none_support
       : `${s.support(seg.claim.n_support, p.n_reviews)}: ${seg.claim.reviews.join(", ")}`;
-    mk.title = sup;
     box.appendChild(mk);
   });
 
-  const n = r.claims.length;
-  const count = (k) => r.claims.filter((c) => classOf(c) === k).length;
-  $("stats").textContent = s.stats({ claims: n, multi: count("multi"), single: count("single"),
-    none: count("none"), words: r.word_count });
+  $("stats").textContent = s.stats({ claims: r.claims.length, words: r.word_count });
   $("meta").textContent = s.meta(p);
+  $("product-title").textContent = `ASIN ${p.product_id}`;
+  renderBars(r);
   document.querySelectorAll(".seg button").forEach((b) => b.classList.toggle("on", b.dataset.view === view));
 }
 
@@ -187,26 +237,45 @@ function show(asin) {
   current = p;
   $("result").hidden = false;
   render();
+  $("result").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function init(payload) {
-  data = payload;
-  const sel = document.createElement("select");
-  sel.id = "sample";
-  sel.setAttribute("aria-label", t().sample);
-  const first = document.createElement("option");
-  first.textContent = t().sample;
-  first.value = "";
-  sel.appendChild(first);
+// Visitor's own product photo: file, paste, drop, or an image link. Never uploaded or fetched from Amazon.
+function setPhoto(src) {
+  if (photoUrl && photoUrl.startsWith("blob:")) URL.revokeObjectURL(photoUrl);
+  photoUrl = src;
+  const img = $("photo-img");
+  img.src = src;
+  img.hidden = false;
+  $("photo-empty").hidden = true;
+}
+
+function clearPhoto() {
+  if (photoUrl && photoUrl.startsWith("blob:")) URL.revokeObjectURL(photoUrl);
+  photoUrl = null;
+  $("photo-img").removeAttribute("src");
+  $("photo-img").hidden = true;
+  $("photo-empty").hidden = false;
+  $("photo-file").value = "";
+  $("photo-url").value = "";
+}
+
+function fromFile(file) {
+  if (!file || !file.type.startsWith("image/")) return;
+  setPhoto(URL.createObjectURL(file));
+}
+
+function initChips() {
+  const box = $("chips");
+  box.textContent = "";
   data.products.forEach((p) => {
-    const o = document.createElement("option");
-    o.value = p.product_id;
-    o.textContent = `${p.product_id} · ${p.category.replace(/_/g, " ")}`;
-    sel.appendChild(o);
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip-btn";
+    b.textContent = `${p.product_id} · ${p.category.replace(/_/g, " ")}`;
+    b.addEventListener("click", () => { $("url").value = p.product_id; show(p.product_id); });
+    box.appendChild(b);
   });
-  sel.addEventListener("change", () => { if (sel.value) { $("url").value = sel.value; show(sel.value); } });
-  $("form").after(sel);
-  sel.style.margin = "10px 0 0";
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -227,8 +296,27 @@ document.addEventListener("DOMContentLoaded", () => {
     if (current) render();
   }));
 
+  // photo slot
+  $("photo-file").addEventListener("change", (e) => fromFile(e.target.files[0]));
+  $("photo-url").addEventListener("change", (e) => {
+    const v = e.target.value.trim();
+    if (/^https?:\/\//i.test(v)) setPhoto(v);
+  });
+  const photo = $("photo");
+  photo.addEventListener("dragover", (e) => { e.preventDefault(); photo.classList.add("drag"); });
+  photo.addEventListener("dragleave", () => photo.classList.remove("drag"));
+  photo.addEventListener("drop", (e) => {
+    e.preventDefault();
+    photo.classList.remove("drag");
+    fromFile(e.dataTransfer.files[0]);
+  });
+  document.addEventListener("paste", (e) => {
+    const item = [...(e.clipboardData?.items || [])].find((i) => i.type.startsWith("image/"));
+    if (item && current) fromFile(item.getAsFile());
+  });
+
   fetch("data/products.json")
     .then((res) => res.json())
-    .then(init)
+    .then((payload) => { data = payload; initChips(); })
     .catch(() => { $("status").textContent = "Could not load data/products.json"; });
 });

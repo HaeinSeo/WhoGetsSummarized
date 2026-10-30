@@ -3,12 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Who Gets Summarized? - evidence highlight demo</title>
+  <title>Who Gets Summarized? · evidence highlight demo</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1 id="t-title">Who Gets Summarized?</h1>
+  <div class="aurora" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/bunny.webp" alt="" class="mascot-mini">
+      <span id="t-title"></span>
+    </div>
     <select id="lang" aria-label="Language">
       <option value="en">English</option>
       <option value="ko">한국어</option>
@@ -18,33 +23,62 @@
   </header>
 
   <main>
-    <p id="t-intro" class="intro"></p>
+    <section class="hero">
+      <img src="assets/bunny.webp" alt="" class="mascot">
+      <div class="bubble">
+        <p id="t-intro"></p>
+      </div>
+    </section>
 
-    <form id="form">
-      <input id="url" type="text" autocomplete="off" spellcheck="false">
-      <button type="submit" id="t-go"></button>
-    </form>
-    <p class="hint" id="t-hint"></p>
-    <p class="status" id="status" role="status"></p>
+    <section class="glass input-card">
+      <form id="form">
+        <input id="url" type="text" autocomplete="off" spellcheck="false">
+        <button type="submit" id="t-go"></button>
+      </form>
+      <p class="hint" id="t-hint"></p>
+      <div class="chips" id="chips"></div>
+      <p class="status" id="status" role="status"></p>
+    </section>
 
     <section id="result" hidden>
-      <div class="controls">
-        <div class="seg" role="tablist">
-          <button type="button" data-view="agent" id="t-view-agent" class="on"></button>
-          <button type="button" data-view="b0" id="t-view-b0"></button>
+      <div class="product glass">
+        <div class="photo-col">
+          <div class="photo" id="photo">
+            <img id="photo-img" alt="" hidden>
+            <div class="photo-empty" id="photo-empty"></div>
+          </div>
+          <div class="photo-tools">
+            <label class="btn-ghost">
+              <span id="t-pick"></span>
+              <input type="file" id="photo-file" accept="image/*" hidden>
+            </label>
+            <input id="photo-url" type="text" autocomplete="off" spellcheck="false">
+          </div>
         </div>
-        <div class="meta" id="meta"></div>
+        <div class="info-col">
+          <div class="kicker" id="meta"></div>
+          <h2 id="product-title"></h2>
+          <div class="bars" id="bars"></div>
+        </div>
       </div>
 
-      <div class="legend">
-        <span class="chip multi" id="t-leg-multi"></span>
-        <span class="chip single" id="t-leg-single"></span>
-        <span class="chip none" id="t-leg-none"></span>
+      <div class="glass summary-card">
+        <div class="card-head">
+          <div class="seg" role="tablist">
+            <button type="button" data-view="agent" id="t-view-agent" class="on"></button>
+            <button type="button" data-view="b0" id="t-view-b0"></button>
+          </div>
+          <div class="legend">
+            <span class="chip multi" id="t-leg-multi"></span>
+            <span class="chip single" id="t-leg-single"></span>
+            <span class="chip none" id="t-leg-none"></span>
+          </div>
+        </div>
+        <article class="summary" id="summary"></article>
+        <p class="stats" id="stats"></p>
       </div>
 
-      <article class="summary" id="summary"></article>
-      <p class="stats" id="stats"></p>
-      <p class="note" id="t-note"></p>
+      <p class="note glass" id="t-note"></p>
     </section>
   </main>
 
